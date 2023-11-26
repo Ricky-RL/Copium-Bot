@@ -140,7 +140,7 @@ def run_discord_bot():
                     await send_message(members, response_message)
                     return                
                 elif(user_message.lower() == 'help'):
-                    await message.author.send(f"`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends champions based on projected player performance and meta shifts\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond")
+                    await message.author.send(f"`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`*{{any text}}: send a message to all users\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends champions based on projected player performance and meta shifts\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond")
                 elif(user_message.lower() == 'recommend'):
                     await message.author.send(f"idk play {random.choice(allchamp)} or something")
                 elif(user_message.lower() == 'list'):
