@@ -3,12 +3,13 @@ import responses
 from discord.ext import commands
 from secrets import TOKEN
 from datetime import datetime
-from data import allchamp
+from data import allchamp, people
 import random
 
 
 members_global = []
 response_list = {}
+
 
 async def send_message(members, message):
         for member in members:
@@ -133,7 +134,7 @@ def run_discord_bot():
                     await send_message(members, response_message)
                     return                
                 elif(user_message.lower() == 'help'):
-                    await message.author.send(f"`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends items based on projected player performance")
+                    await message.author.send(f"`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends items based on projected player performance\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond")
                 elif(user_message.lower() == 'recommend'):
                     await message.author.send(f"idk play {random.choice(allchamp)} or something")
                 elif(user_message.lower() == 'list'):
@@ -142,6 +143,27 @@ def run_discord_bot():
                         await message.author.send('\n'.join(response_list.values())) 
                     else:
                         await message.author.send('no one has responded yet. Maybe be the first to respond??')
+                elif(user_message.lower() == 'clear'):
+                    if str(message.author) == 'iplaygam':
+                        response_list = {}
+                        await message.author.send('cleared')
+                    else:
+                        await message.author.send('bold of you to assume I would let you delete this dictionary')
+                elif(user_message.lower() == 'remind'):
+                    temp_members = []
+                    temp_people = people
+                    for member in members:
+                        for key in response_list:
+                            if key and key == member.name:
+                                temp_people.remove(key)
+
+                    for member in members:
+                        for player in people:
+                            if member.name == player:   
+                                temp_members.append(member)
+                                await send_message(temp_members, f'{member.mention} a reminder to hurry up, courtesy of {message.author}')
+                                temp_members = []
+
                 else:
                     await message.author.send(f"invalid input. Please enter a valid command")
 
