@@ -143,7 +143,7 @@ def run_discord_bot():
                     else:
                         await message.author.send('no one has responded yet. Maybe be the first to respond??')
                 else:
-                    await message.author.send(f"invalid input: please enter a number")
+                    await message.author.send(f"invalid input. Please enter a valid command")
 
 
             if(message.content.startswith('*')):
