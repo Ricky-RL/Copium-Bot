@@ -2,8 +2,14 @@ import discord
 import responses
 from discord.ext import commands
 from secrets import TOKEN
+from datetime import datetime
+from data import allchamp
+import random
+
 
 members_global = []
+response_list = {}
+
 async def send_message(members, message):
         for member in members:
             if 'iplaygam' in member.name:
@@ -71,7 +77,11 @@ def run_discord_bot():
 
         message = 'leagueee'
         await send_message(members, message)
+        message = 'to respond yes or no, please type y or n preceded by `?`. Example: `?y` `?n`'
+        await send_message(members, message)
         message = 'if you need more time, please enter the amount of time you require in minutes with a number in minutes preceded by `?`. Example: `?10`'
+        await send_message(members, message)
+        message = 'Use `?help` to see a complete list of commands'
         await send_message(members, message)
 
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
@@ -90,6 +100,8 @@ def run_discord_bot():
         response_prefix = '?'
 
         user_message = message.content[len(response_prefix):].strip()
+        global response_list
+
 
         if isinstance(message.channel, discord.DMChannel):
             # Message sent in DM
@@ -97,16 +109,39 @@ def run_discord_bot():
             print(f'{message.author}: {user_message}')
             if(message.content.startswith(response_prefix)):
                 user_message = message.content[len(response_prefix):].strip()
+                current_time = datetime.now().strftime("%H:%M:%S")
                 if(user_message.isdigit()):
                     time = int(user_message)
                     if time > 60:
                         await message.author.send(f"we arent waiting that long dipshiit")
                         return
-
                     await message.author.send(f"ok, forwarding a {user_message} minute delay to everyone else")
-                    message = f"{message.author} will be ready in {time} minutes"
-                    await send_message(members, message)
+                    response_message = f"{message.author} will be ready in {time} minutes"
+                    response_list[str(message.author)] = f"{current_time}: {message.author} will be ready in {user_message} minutes"
+                    await send_message(members, response_message)
                     return
+                elif(user_message.lower() == 'y'):
+                    await message.author.send(f"ok, forwarding a 'yes' response to everyone else")
+                    response_message = f"{message.author} is playing"
+                    response_list[str(message.author)] = f"{current_time}: {message.author} is coming"
+                    await send_message(members, response_message)
+                    return
+                elif(user_message.lower() == 'n'):
+                    await message.author.send(f"ok, forwarding a 'no' response to everyone else")
+                    response_message = f"{message.author} is not playing"
+                    response_list[str(message.author)] = f"{current_time}: {message.author} is not coming"
+                    await send_message(members, response_message)
+                    return                
+                elif(user_message.lower() == 'help'):
+                    await message.author.send(f"`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends items based on projected player performance")
+                elif(user_message.lower() == 'recommend'):
+                    await message.author.send(f"idk play {random.choice(allchamp)} or something")
+                elif(user_message.lower() == 'list'):
+                    print(response_list)
+                    if response_list:
+                        await message.author.send('\n'.join(response_list.values())) 
+                    else:
+                        await message.author.send('no one has responded yet. Maybe be the first to respond??')
                 else:
                     await message.author.send(f"invalid input: please enter a number")
 
@@ -117,11 +152,11 @@ def run_discord_bot():
                 await send_message(members, message)
                 return
 
-            response = responses.handle_response(user_message)
-            try: 
-                await message.author.send(response)
-            except discord.Forbidden:
-                print("error")
+            # response = responses.handle_response(user_message)
+            # try: 
+            #     await message.author.send(response)
+            # except discord.Forbidden:
+            #     print("error")
             
         else:
             await client.process_commands(message)
