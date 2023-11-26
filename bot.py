@@ -2,7 +2,7 @@ import discord
 import responses
 from discord.ext import commands
 from secrets import TOKEN
-from datetime import datetime
+from datetime import datetime, timedelta
 from data import allchamp, people
 import random
 
@@ -105,15 +105,26 @@ def run_discord_bot():
             print(f'{message.author}: {user_message}')
             if(message.content.startswith(response_prefix)):
                 user_message = message.content[len(response_prefix):].strip()
-                current_time = datetime.now().strftime("%H:%M:%S")
+                unformatted_current_time = datetime.now()
+                current_time = unformatted_current_time.strftime("%I:%M %p")
+
+
                 if(user_message.isdigit()):
                     time = int(user_message)
-                    if time > 60:
+                    if time == 69:
+                        await message.author.send(f"nice")
+                    if time > 69:
                         await message.author.send(f"we arent waiting that long dipshiit")
                         return
+                    if time == 0:
+                        await message.author.send(f"bruh just respond yes at this point")
+
                     await message.author.send(f"ok, forwarding a {user_message} minute delay to everyone else")
-                    response_message = f"{message.author} will be ready in {time} minutes"
-                    response_list[str(message.author)] = f"{current_time}: {message.author} will be ready in {user_message} minutes"
+
+                    ready_time = (unformatted_current_time + timedelta(minutes=time)).strftime("%I:%M %p")
+
+                    response_message = f"{message.author} will be ready in {time} minutes. They claim to be ready at {ready_time}"
+                    response_list[str(message.author)] = f"{current_time}: {message.author} will be ready in {time} minutes. They claim to be ready at {ready_time}"
                     await send_message(members, response_message)
                     return
                 elif(user_message.lower() == 'y'):
