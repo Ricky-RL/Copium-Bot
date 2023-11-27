@@ -29,7 +29,6 @@ async def send_message(members, message):
                     await member.send(message)
                 except discord.Forbidden:
                     print(f"Could not send a message to {member.name}")
-
             if  'masterfireking' in member.name:
                 try:
                     await member.send(message)
@@ -41,6 +40,12 @@ async def send_message(members, message):
                 except discord.Forbidden:
                     print(f"Could not send a message to {member.name}")
 
+
+            # if  'rehzzie' in member.name:
+            #     try:
+            #         await member.send(message)
+            #     except discord.Forbidden:
+            #         print(f"Could not send a message to {message.author.name}#{message.author.discriminator}.")
 
 
 
@@ -70,15 +75,15 @@ def run_discord_bot():
         members = guild.members
         global members_global
         members_global = members
+        temp_members = []
+        for member in members:
+            for player in people:
+                if member.name == player:   
+                    temp_members.append(member)
+                    message = f'{member.mention} leagueee\nto respond yes or no, please type y or n preceded by `?`. Example: `?y` `?n`\nif you need more time, please enter the amount of time you require in minutes with a number in minutes preceded by `?`. Example: `?10`\nUse `?help` to see a complete list of commands'
+                    await send_message(temp_members, message)
+                    temp_members = []
 
-        message = 'leagueee'
-        await send_message(members, message)
-        message = 'to respond yes or no, please type y or n preceded by `?`. Example: `?y` `?n`'
-        await send_message(members, message)
-        message = 'if you need more time, please enter the amount of time you require in minutes with a number in minutes preceded by `?`. Example: `?10`'
-        await send_message(members, message)
-        message = 'Use `?help` to see a complete list of commands'
-        await send_message(members, message)
 
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
         # await send_message(members, message)
@@ -140,7 +145,7 @@ def run_discord_bot():
                     await send_message(members, response_message)
                     return                
                 elif(user_message.lower() == 'help'):
-                    await message.author.send(f"`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`*{{any text}}: send a message to all users\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends champions based on projected player performance and meta shifts\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond")
+                    await message.author.send(f"`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`*{{any text}}`: send a message to all users\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends champions based on projected player performance and meta shifts\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond")
                 elif(user_message.lower() == 'recommend'):
                     await message.author.send(f"idk play {random.choice(allchamp)} or something")
                 elif(user_message.lower() == 'list'):
@@ -164,7 +169,7 @@ def run_discord_bot():
                                 temp_people.remove(key)
 
                     for member in members:
-                        for player in people:
+                        for player in temp_people:
                             if member.name == player:   
                                 temp_members.append(member)
                                 await send_message(temp_members, f'{member.mention} a reminder to hurry up, courtesy of {message.author}')
