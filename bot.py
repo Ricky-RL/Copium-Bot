@@ -34,11 +34,17 @@ async def send_message(members, message):
                     await member.send(message)
                 except discord.Forbidden:
                     print(f"Could not send a message to {message.author.name}#{message.author.discriminator}.")
+
             if 'warscout101' in member.name:
                 try:
                     await member.send(message)
                 except discord.Forbidden:
                     print(f"Could not send a message to {member.name}")
+            # if 'newxam' in member.name:
+            #     try:
+            #         await member.send(message)
+            #     except discord.Forbidden:
+            #         print(f"Could not send a message to {member.name}")
 
             # if 'bailey19307' in member.name:
             #     try:
