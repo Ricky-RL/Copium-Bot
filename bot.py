@@ -95,6 +95,25 @@ def run_discord_bot():
                     await send_message(temp_members, message)
                     temp_members = []
 
+    @client.command(name='overwatch')
+    async def list_members(ctx):
+        guild = ctx.guild
+
+        # Fetch all members in the guild
+        async for member in guild.fetch_members(limit=None):
+            pass  
+
+        members = guild.members
+        global members_global
+        members_global = members
+        temp_members = []
+        for member in members:
+            for player in people:
+                if member.name == player:   
+                    temp_members.append(member)
+                    message = f'{member.mention} overwatch\nto respond yes or no, please type y or n preceded by `?`. Example: `?y` `?n`\nif you need more time, please enter the amount of time you require in minutes with a number in minutes preceded by `?`. Example: `?10`\nUse `?help` to see a complete list of commands'
+                    await send_message(temp_members, message)
+                    temp_members = []
 
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
         # await send_message(members, message)
