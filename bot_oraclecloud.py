@@ -16,29 +16,29 @@ async def send_message(members, message):
             except discord.Forbidden:
                 print(f"Could not send a message to {member.name}")
 
-        if 'jaycsee' in member.name:
-            try:
-                await member.send(message)
-            except discord.Forbidden:
-                print(f"Could not send a message to {member.name}")
+        # if 'jaycsee' in member.name:
+        #     try:
+        #         await member.send(message)
+        #     except discord.Forbidden:
+        #         print(f"Could not send a message to {member.name}")
                 
-        if 'epickc123' in member.name:
-            try:
-                await member.send(message)
-            except discord.Forbidden:
-                print(f"Could not send a message to {member.name}")
+        # if 'epickc123' in member.name:
+        #     try:
+        #         await member.send(message)
+        #     except discord.Forbidden:
+        #         print(f"Could not send a message to {member.name}")
 
-        if 'masterfireking' in member.name:
-            try:
-                await member.send(message)
-            except discord.Forbidden:
-                print(f"Could not send a message to {member.name}")
+        # if 'masterfireking' in member.name:
+        #     try:
+        #         await member.send(message)
+        #     except discord.Forbidden:
+        #         print(f"Could not send a message to {member.name}")
 
-        if 'warscout101' in member.name:
-            try:
-                await member.send(message)
-            except discord.Forbidden:
-                print(f"Could not send a message to {member.name}")
+        # if 'warscout101' in member.name:
+        #     try:
+        #         await member.send(message)
+        #     except discord.Forbidden:
+        #         print(f"Could not send a message to {member.name}")
 
 def run_discord_bot():
     intents = discord.Intents.default()
@@ -163,13 +163,21 @@ def run_discord_bot():
                             await send_message(temp_members, f'{member.mention} a reminder to hurry up, courtesy of {message.author}')
                             temp_members = []
 
+
+       
                 else:
+
                     await message.author.send(f"invalid input. Please enter a valid command")
 
             if message.content.startswith('*'):
                 user_message = message.content[1:].strip()
                 message_text = f"{message.author}: {user_message}"
                 await send_message(members, message_text)
+                return
+            
+            if message.content.startswith('!'):
+                user_message = message.content[len(response_prefix):].strip().split(',')
+                print(user_message)
                 return
 
         else:
