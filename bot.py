@@ -29,17 +29,17 @@ async def send_message(members, message):
                     await member.send(message)
                 except discord.Forbidden:
                     print(f"Could not send a message to {member.name}")
-            if  'masterfireking' in member.name:
-                try:
-                    await member.send(message)
-                except discord.Forbidden:
-                    print(f"Could not send a message to {message.author.name}#{message.author.discriminator}.")
+            # if  'masterfireking' in member.name:
+            #     try:
+            #         await member.send(message)
+            #     except discord.Forbidden:
+            #         print(f"Could not send a message to {message.author.name}#{message.author.discriminator}.")
 
-            if 'warscout101' in member.name:
-                try:
-                    await member.send(message)
-                except discord.Forbidden:
-                    print(f"Could not send a message to {member.name}")
+            # if 'warscout101' in member.name:
+            #     try:
+            #         await member.send(message)
+            #     except discord.Forbidden:
+            #         print(f"Could not send a message to {member.name}")
             # if 'newxam' in member.name:
             #     try:
             #         await member.send(message)
@@ -175,7 +175,7 @@ def run_discord_bot():
                     await send_message(members, response_message)
                     return                
                 elif(user_message.lower() == 'help'):
-                    await message.author.send(f"`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`*{{any text}}`: send a message to all users\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends champions based on projected player performance and meta shifts\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond")
+                    await message.author.send(f"`![game_name] discord_tag_1 discord_tag_2 ...`: \n example: !league iplaygam epickc123 -> sends league request to keyon and ricky ?tags`: see the list of all valid discord tags\n`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`*{{any text}}`: send a message to all users\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends champions based on projected player performance and meta shifts\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond\n")
                 elif(user_message.lower() == 'recommend'):
                     await message.author.send(f"idk play {random.choice(allchamp)} or something")
                 elif(user_message.lower() == 'list'):
@@ -204,6 +204,8 @@ def run_discord_bot():
                                 temp_members.append(member)
                                 await send_message(temp_members, f'{member.mention} a reminder to hurry up, courtesy of {message.author}')
                                 temp_members = []
+                elif(user_message.lower() == 'tags'):
+                    await message.author.send(f"{people}")
 
                 else:
                     await message.author.send(f"invalid input. Please enter a valid command")
@@ -213,6 +215,25 @@ def run_discord_bot():
                 user_message = message.content[len(response_prefix):].strip()
                 message = f"{message.author}: {user_message}"
                 await send_message(members, message)
+                return
+            
+            if message.content.startswith('!'):
+                user_message = message.content[len(response_prefix):].strip().split(' ')
+                
+
+                user_message_members = user_message[1:]
+                if user_message[1] == 'all':
+                    await send_message(members, f'{message.author.name} is asking you to play {user_message[0]}')
+
+                else:
+                    for member in members:
+                        for player in user_message_members:
+                            print(f'player: {player} | member: {member.name}')
+                            if member.name == player:
+                                print(f'sending to {member}')
+                                await message.author.send(f"asking {member} to play {user_message[0]}")
+                                await send_message([member], f'{message.author.name} is asking you to play {user_message[0]} bro')
+                print(user_message)
                 return
 
             # response = responses.handle_response(user_message)
