@@ -3,62 +3,17 @@ import responses
 from discord.ext import commands
 from secrets import TOKEN
 from datetime import datetime, timedelta
-from data import allchamp, people
+from data import allchamp, people, help_str
 import random
+from profiles.profiles_db import add_new_profile, fetch_profile, delete_profile
 
-
-members_global = []
+members_global= []
 response_list = {}
-
+current_members = []
 
 async def send_message(members, message):
         for member in members:
-            if 'iplaygam' in member.name:
-                try:
-                    await member.send(message)
-                except discord.Forbidden:
-                    print(f"Could not send a message to {member.name}")
-
-            if  'jaycsee' in member.name:
-                try:
-                    await member.send(message)
-                except discord.Forbidden:
-                    print(f"Could not send a message to {message.author.name}#{message.author.discriminator}.")
-            if 'epickc123' in member.name:
-                try:
-                    await member.send(message)
-                except discord.Forbidden:
-                    print(f"Could not send a message to {member.name}")
-            # if  'masterfireking' in member.name:
-            #     try:
-            #         await member.send(message)
-            #     except discord.Forbidden:
-            #         print(f"Could not send a message to {message.author.name}#{message.author.discriminator}.")
-
-            # if 'warscout101' in member.name:
-            #     try:
-            #         await member.send(message)
-            #     except discord.Forbidden:
-            #         print(f"Could not send a message to {member.name}")
-            # if 'newxam' in member.name:
-            #     try:
-            #         await member.send(message)
-            #     except discord.Forbidden:
-            #         print(f"Could not send a message to {member.name}")
-
-            # if 'bailey19307' in member.name:
-            #     try:
-            #         await member.send(message)
-            #     except discord.Forbidden:
-            #         print(f"Could not send a message to {member.name}")
-
-            # if  'rehzzie' in member.name:
-            #     try:
-            #         await member.send(message)
-            #     except discord.Forbidden:
-            #         print(f"Could not send a message to {message.author.name}#{message.author.discriminator}.")
-
-
+            await member.send(message)
 
 
 def run_discord_bot():
@@ -118,11 +73,56 @@ def run_discord_bot():
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
         # await send_message(members, message)
 
+    @client.command(name='test')
+    async def list_members(ctx):
+        guild = ctx.guild
+
+        # Fetch all members in the guild
+        async for member in guild.fetch_members(limit=None):
+            pass  
+
+        members = guild.members
+        global members_global
+        members_global = members
+        temp_members = []
+
+        for member in members:
+            for player in people:
+                if member.name == 'iplaygam':   
+                    temp_members.append(member)
+                    message = f'{member.mention} overwatch\n begin testing'
+                    await send_message(temp_members, message)
+                    temp_members = []
+                    break
+
+    @client.command(name='start')
+    async def list_members(ctx):
+        guild = ctx.guild
+
+        # Fetch all members in the guild
+        async for member in guild.fetch_members(limit=None):
+            pass  
+
+        members = [member for member in guild.members if member.name in people]
+        global members_global
+        members_global = members
+        temp_members = []
+
+        for member in members:
+            for player in people:
+                if member.name == ctx.author.name:   
+                    temp_members.append(member)
+                    message = f'Bot activated'
+                    await send_message(temp_members, message)
+                    temp_members = []
+                    break
 
                 
 
     @client.event
     async def on_message(message):
+        global current_members
+
         members = members_global
         # Ignore messages from the bot itself to avoid an infinite loop
         if message.author == client.user:
@@ -154,28 +154,30 @@ def run_discord_bot():
                     if time == 0:
                         await message.author.send(f"bruh just respond yes at this point")
 
-                    await message.author.send(f"ok, forwarding a {user_message} minute delay to everyone else")
+                    await message.author.send(f"ok, forwarding a {user_message} minute delay to {[n.name for n in current_members]}")
 
                     ready_time = (unformatted_current_time + timedelta(minutes=time)).strftime("%I:%M %p")
 
                     response_message = f"{message.author} will be ready in {time} minutes. They claim to be ready at {ready_time}"
                     response_list[str(message.author)] = f"{current_time}: {message.author} will be ready in {time} minutes. They claim to be ready at {ready_time}"
-                    await send_message(members, response_message)
+                    print(current_members)
+                    await send_message(current_members, response_message)
                     return
                 elif(user_message.lower() == 'y'):
-                    await message.author.send(f"ok, forwarding a 'yes' response to everyone else")
+                    await message.author.send(f"ok, forwarding a 'yes' response to {[n.name for n in current_members]}")
                     response_message = f"{message.author} is playing"
                     response_list[str(message.author)] = f"{current_time}: {message.author} is coming"
-                    await send_message(members, response_message)
+                    await send_message(current_members, response_message)
+
                     return
                 elif(user_message.lower() == 'n'):
-                    await message.author.send(f"ok, forwarding a 'no' response to everyone else")
+                    await message.author.send(f"ok, forwarding a 'no' response to {[n.name for n in current_members]}")
                     response_message = f"{message.author} is not playing"
                     response_list[str(message.author)] = f"{current_time}: {message.author} is not coming"
-                    await send_message(members, response_message)
+                    await send_message(current_members, response_message)
                     return                
                 elif(user_message.lower() == 'help'):
-                    await message.author.send(f"`![game_name] discord_tag_1 discord_tag_2 ...`: \n example: !league iplaygam epickc123 -> sends league request to keyon and ricky ?tags`: see the list of all valid discord tags\n`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`*{{any text}}`: send a message to all users\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends champions based on projected player performance and meta shifts\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond\n")
+                    await message.author.send(help_str)
                 elif(user_message.lower() == 'recommend'):
                     await message.author.send(f"idk play {random.choice(allchamp)} or something")
                 elif(user_message.lower() == 'list'):
@@ -185,11 +187,11 @@ def run_discord_bot():
                     else:
                         await message.author.send('no one has responded yet. Maybe be the first to respond??')
                 elif(user_message.lower() == 'clear'):
-                    if str(message.author) == 'iplaygam':
-                        response_list = {}
-                        await message.author.send('cleared')
-                    else:
-                        await message.author.send('bold of you to assume I would let you delete this dictionary')
+                    #if str(message.author) == 'iplaygam':
+                    response_list = {}
+                    current_members = []
+                    await message.author.send('cleared')
+#
                 elif(user_message.lower() == 'remind'):
                     temp_members = []
                     temp_people = people
@@ -219,28 +221,64 @@ def run_discord_bot():
             
             if message.content.startswith('!'):
                 user_message = message.content[len(response_prefix):].strip().split(' ')
-                
+                print(user_message)
+                if user_message[0] == 'create_profile':
+                    if len(user_message) < 3:
+                        await message.author.send(f"invalid input. Please enter a valid command expecting 3 or more arguments. Received {len(user_message)}")
+                        return
+                    
+                    profile_name = user_message[1]
+                    user_message_members = user_message[2:]
 
-                user_message_members = user_message[1:]
-                if user_message[1] == 'all':
-                    await send_message(members, f'{message.author.name} is asking you to play {user_message[0]}')
-
-                else:
+                    temp_profile = {profile_name: []}
                     for member in members:
                         for player in user_message_members:
-                            print(f'player: {player} | member: {member.name}')
                             if member.name == player:
-                                print(f'sending to {member}')
-                                await message.author.send(f"asking {member} to play {user_message[0]}")
-                                await send_message([member], f'{message.author.name} is asking you to play {user_message[0]} bro')
-                print(user_message)
-                return
+                                # print(f'player: {player} | member: {member.name}')
+                                temp_profile[profile_name].append(player)
+                                await message.author.send(f"adding {player} to {profile_name}")
+                                # await message.author.send(f"asking {member} to play {user_message[0]}")
+                                # await send_message([member], f'{message.author.name} is asking you to play {user_message[0]} bro')     
+                    # Read existing profiles from file
+                    print(temp_profile)
 
-            # response = responses.handle_response(user_message)
-            # try: 
-            #     await message.author.send(response)
-            # except discord.Forbidden:
-            #     print("error")
+                    result_message = add_new_profile(profile_name, temp_profile)
+                    await message.author.send(result_message)
+                elif user_message[0] == 'delete_profile':
+                    if len(user_message) < 2:
+                        await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments. Received {len(user_message)}")
+                        return
+                    
+                    profile_name = user_message[1]
+                    result_message = delete_profile(profile_name)
+                    await message.author.send(result_message)
+                elif user_message[0] == 'get_profiles':    
+                    result_message = fetch_profile()
+                    formatted_message = "Profiles:\n" + "\n".join([f"- {profile}: {', '.join(members)}" for profile, members in result_message.items()])
+                    await message.author.send(formatted_message)
+                    return
+                elif user_message[0] == 'play':
+                    current_members = []
+                    if len(user_message) < 2:
+                        await message.author.send(f"invalid input. Please enter a valid command expecting 2 or more arguments. Received {len(user_message)}")
+                        return
+                    profile_name = user_message[1]
+                    profiles = fetch_profile()
+                    profile = profiles.get(profile_name, None)
+                    if profile:
+                        for member in members:
+                            for player in profile:
+                                if member.name == player:  
+                                    print(player)
+                                    current_members.append(member)
+                                    
+                        await message.author.send(f"asking {[n.name for n in current_members]} to play {profile_name}")
+                        for member in current_members:
+                            await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
+
+
+                    else:
+                        await message.author.send(f"Profile {profile_name} does not exist.")
             
         else:
             await client.process_commands(message)
