@@ -138,6 +138,7 @@ def run_discord_bot():
             # Message sent in DM
             user_message = message.content.strip()
             print(f'{message.author}: {user_message}')
+
             if(message.content.startswith(response_prefix)):
                 user_message = message.content[len(response_prefix):].strip()
                 unformatted_current_time = datetime.now()

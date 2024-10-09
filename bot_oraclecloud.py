@@ -162,8 +162,6 @@ def run_discord_bot():
                             temp_members.append(member)
                             await send_message(temp_members, f'{member.mention} a reminder to hurry up, courtesy of {message.author}')
                             temp_members = []
-
-
        
                 else:
 
