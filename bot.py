@@ -1,11 +1,18 @@
 import discord
 import responses
 from discord.ext import commands
-from secrets import TOKEN
+from secrets import TOKEN, PROJECT, ZONE, INSTANCE_NAME
 from datetime import datetime, timedelta
 from data import allchamp, people, help_str
 import random
+from google.cloud import compute_v1
+from google.oauth2 import service_account
 from profiles.profiles_db import add_new_profile, fetch_profile, delete_profile
+
+SERVICE_ACCOUNT_FILE = './secrets_gcp.json'
+credentials = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE
+)
 
 members_global= []
 response_list = {}
@@ -15,6 +22,18 @@ async def send_message(members, message):
         for member in members:
             await member.send(message)
 
+def start_instance():
+    print("hi")
+    client = compute_v1.InstancesClient(credentials=credentials)
+    operation = client.start(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
+    print(f"Starting instance: {INSTANCE_NAME}")
+    return operation
+
+def stop_instance():
+    client = compute_v1.InstancesClient(credentials=credentials)
+    operation = client.stop(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
+    print(f"Stopping instance: {INSTANCE_NAME}")
+    return operation
 
 def run_discord_bot():
     intents = discord.Intents.default()
@@ -72,8 +91,8 @@ def run_discord_bot():
 
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
         # await send_message(members, message)
-
-    @client.command(name='test')
+    
+    @client.command(name='test2')
     async def list_members(ctx):
         guild = ctx.guild
 
@@ -276,10 +295,12 @@ def run_discord_bot():
                         await message.author.send(f"asking {[n.name for n in current_members]} to play {profile_name}")
                         for member in current_members:
                             await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
-
-
-                    else:
-                        await message.author.send(f"Profile {profile_name} does not exist.")
+                elif user_message[0] == 'start_server':
+                    print(start_instance())
+                elif user_message[0] == 'stop_server':
+                    print(stop_instance())
+                else:
+                    await message.author.send(f"Profile {profile_name} does not exist.")
             
         else:
             await client.process_commands(message)
