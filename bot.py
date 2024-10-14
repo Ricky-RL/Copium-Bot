@@ -92,7 +92,7 @@ def run_discord_bot():
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
         # await send_message(members, message)
     
-    @client.command(name='test2')
+    @client.command(name='test1')
     async def list_members(ctx):
         guild = ctx.guild
 
@@ -289,16 +289,49 @@ def run_discord_bot():
                         for member in members:
                             for player in profile:
                                 if member.name == player:  
-                                    print(player)
                                     current_members.append(member)
                                     
                         await message.author.send(f"asking {[n.name for n in current_members]} to play {profile_name}")
                         for member in current_members:
                             await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
                 elif user_message[0] == 'start_server':
-                    print(start_instance())
+                    instance_message = start_instance()
+                    # instance_message = 'a'
+
+                    profiles = fetch_profile()
+                    profile = profiles.get('valheim', None)
+                    print(profile)
+                    if profile:
+                        for member in members:
+                            for player in profile:
+                                if member.name == player:  
+                                    current_members.append(member)
+                                    
+                        for member in current_members:
+                            await member.send(f'valheim server started by {message.author.name}\n status: `{instance_message}`')
+                        
+                        channel = client.get_channel(1295284991064018945)
+                        if channel:
+                            await channel.send(f'{message.author.name} started the valheim server\n status: `{instance_message}`')
+                    
                 elif user_message[0] == 'stop_server':
-                    print(stop_instance())
+                    instance_message = stop_instance()
+                    # instance_message = 'a'
+
+                    profile = fetch_profile('valheim')
+                    if profile:
+                        for member in members:
+                            for player in profile:
+                                if member.name == player:  
+                                    current_members.append(member)
+                                    
+                        for member in current_members:
+                            await member.send(f'valheim server stopped by {message.author.name}\n status: `{instance_message}`')
+
+                        channel = client.get_channel(1295284991064018945)
+                        if channel:
+                            await channel.send(f'{message.author.name} started the valheim server\n status: `{instance_message}`')
+
                 else:
                     await message.author.send(f"Profile {profile_name} does not exist.")
             
