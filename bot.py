@@ -16,7 +16,7 @@ credentials = service_account.Credentials.from_service_account_file(
 
 members_global= []
 response_list = {}
-current_members = []
+current_members = set()
 
 async def send_message(members, message):
         for member in members:
@@ -209,7 +209,7 @@ def run_discord_bot():
                 elif(user_message.lower() == 'clear'):
                     #if str(message.author) == 'iplaygam':
                     response_list = {}
-                    current_members = []
+                    current_members = set()
                     await message.author.send('cleared')
 #
                 elif(user_message.lower() == 'remind'):
@@ -278,7 +278,7 @@ def run_discord_bot():
                     await message.author.send(formatted_message)
                     return
                 elif user_message[0] == 'play':
-                    current_members = []
+                    current_members = set()
                     if len(user_message) < 2:
                         await message.author.send(f"invalid input. Please enter a valid command expecting 2 or more arguments. Received {len(user_message)}")
                         return
@@ -334,6 +334,8 @@ def run_discord_bot():
 
                 else:
                     await message.author.send(f"Profile {profile_name} does not exist.")
+            else:
+                await message.author.send("message not recognized. Please enter a valid command")
             
         else:
             await client.process_commands(message)
