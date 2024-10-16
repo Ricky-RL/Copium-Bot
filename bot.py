@@ -23,15 +23,16 @@ async def send_message(members, message):
             await member.send(message)
 
 def start_instance():
-    print("hi")
     client = compute_v1.InstancesClient(credentials=credentials)
     operation = client.start(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
+    operation.result()
     print(f"Starting instance: {INSTANCE_NAME}")
     return operation
 
 def stop_instance():
     client = compute_v1.InstancesClient(credentials=credentials)
     operation = client.stop(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
+    operation.result()
     print(f"Stopping instance: {INSTANCE_NAME}")
     return operation
 
