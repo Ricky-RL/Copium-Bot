@@ -290,7 +290,7 @@ def run_discord_bot():
                         for member in members:
                             for player in profile:
                                 if member.name == player:  
-                                    current_members.append(member)
+                                    current_members.add(member)
                                     
                         await message.author.send(f"asking {[n.name for n in current_members]} to play {profile_name}")
                         for member in current_members:
@@ -306,7 +306,7 @@ def run_discord_bot():
                         for member in members:
                             for player in profile:
                                 if member.name == player:  
-                                    current_members.append(member)
+                                    current_members.add(member)
                                     
                         for member in current_members:
                             await member.send(f'valheim server started by {message.author.name}\n status: `{instance_message}`')
@@ -324,7 +324,7 @@ def run_discord_bot():
                         for member in members:
                             for player in profile:
                                 if member.name == player:  
-                                    current_members.append(member)
+                                    current_members.add(member)
                                     
                         for member in current_members:
                             await member.send(f'valheim server stopped by {message.author.name}\n status: `{instance_message}`')
