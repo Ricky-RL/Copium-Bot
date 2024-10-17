@@ -326,12 +326,12 @@ def run_discord_bot():
                                 if member.name == player:  
                                     current_members.add(member)
                                     
-                        for member in current_members:
-                            await member.send(f'valheim server stopped by {message.author.name}\n status: `{instance_message}`')
+                        # for member in current_members:
+                        #     await member.send(f'valheim server stopped by {message.author.name}\n status: `{instance_message}`')
 
                         channel = client.get_channel(1295284991064018945)
                         if channel:
-                            await channel.send(f'{message.author.name} started the valheim server\n status: `{instance_message}`')
+                            await channel.send(f'{message.author.name} stopped the valheim server\n status: `{instance_message}`')
 
                 else:
                     await message.author.send(f"Profile {profile_name} does not exist.")
