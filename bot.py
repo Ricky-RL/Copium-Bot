@@ -1,3 +1,4 @@
+import asyncio
 import discord
 import responses
 from discord.ext import commands
@@ -17,24 +18,80 @@ credentials = service_account.Credentials.from_service_account_file(
 members_global= []
 response_list = {}
 current_members = set()
-
+operation_results = {2104194: 'DONE', 35394935: 'PENDING', 121282975: 'RUNNING'}
 async def send_message(members, message):
         for member in members:
             await member.send(message)
+async def handle_instance_start(task, message, client, channel, operation_results, msg):
+    # Wait for the task to complete and get the result
+    operation = await task
 
-def start_instance():
+    # Now that the task is done, send the message to the channel
+    if channel:
+        await channel.send(f'{message.author} {msg} the valheim server\n status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
+
+
+
+async def start_instance(members, author):
+
+    profiles = fetch_profile()
+    profile = profiles.get('valheim', None)
+    if profile:
+        for member in members:
+            for player in profile:
+                if member.name == player:  
+                    current_members.add(member)
+
+    # for member in current_members:
+    #     await member.send(f'valheim server is starting')
+    print(f"Starting instance: {INSTANCE_NAME}")
+    await get_status(current_members)
+
     client = compute_v1.InstancesClient(credentials=credentials)
     operation = client.start(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
-    operation.result()
-    print(f"Starting instance: {INSTANCE_NAME}")
+
+    operation.result()  # Wait for the operation to complete
+    for member in current_members:    
+        await member.send(f'valheim server started by {author}\n status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
+
+    print('server started')
     return operation
 
-def stop_instance():
+async def stop_instance(members, author):
+
+    profile = fetch_profile('valheim')
+    if profile:
+        for member in members:
+            for player in profile:
+                if member.name == player:  
+                    current_members.add(member)
+
+    for member in current_members:
+        await member.send(f'valheim server is stopping')
+    print(f"Stopping instance: {INSTANCE_NAME}")
+    await get_status(current_members)
+
     client = compute_v1.InstancesClient(credentials=credentials)
     operation = client.stop(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
     operation.result()
-    print(f"Stopping instance: {INSTANCE_NAME}")
+    # operation.result()
+    print(f"Stopped instance: {INSTANCE_NAME}")
+          
+    for member in current_members:
+        await member.send(f'valheim server stopped by {author}\nstatus: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
+
+
     return operation
+
+async def get_status(members):
+    print(f"Getting status of instance: {INSTANCE_NAME}")
+    client = compute_v1.InstancesClient(credentials=credentials)
+    operation = client.get(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
+    print(f"Got status of instance: {INSTANCE_NAME}")
+    print(operation.status)
+    for member in members:
+        await member.send(f'valheim server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
+    return
 
 def run_discord_bot():
     intents = discord.Intents.default()
@@ -93,7 +150,7 @@ def run_discord_bot():
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
         # await send_message(members, message)
     
-    @client.command(name='test1')
+    @client.command(name='test2')
     async def list_members(ctx):
         guild = ctx.guild
 
@@ -296,49 +353,39 @@ def run_discord_bot():
                         for member in current_members:
                             await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
                 elif user_message[0] == 'start_server':
-                    instance_message = start_instance()
+                    # operation = await start_instance(members, message.author)
                     # instance_message = 'a'
+                    operation_task = asyncio.create_task(start_instance(members, message.author))
 
-                    profiles = fetch_profile()
-                    profile = profiles.get('valheim', None)
-                    print(profile)
-                    if profile:
-                        for member in members:
-                            for player in profile:
-                                if member.name == player:  
-                                    current_members.add(member)
-                                    
-                        for member in current_members:
-                            await member.send(f'valheim server started by {message.author.name}\n status: `{instance_message}`')
-                        
-                        channel = client.get_channel(1295284991064018945)
-                        if channel:
-                            await channel.send(f'{message.author.name} started the valheim server\n status: `{instance_message}`')
-                    
+                    channel = client.get_channel(1295284991064018945)
+                    if channel:
+                        operation_task.add_done_callback( lambda task: asyncio.create_task(handle_instance_start(operation_task, message, client, channel, operation_results, 'started'))    )    
                 elif user_message[0] == 'stop_server':
-                    instance_message = stop_instance()
-                    # instance_message = 'a'
+                    operation_task = asyncio.create_task(stop_instance(members, message.author))
+                    channel = client.get_channel(1295284991064018945)
 
+                    if channel:
+                        operation_task.add_done_callback( lambda task: asyncio.create_task(handle_instance_start(operation_task, message, client, channel, operation_results, 'started'))    )    
+                
+                elif user_message[0] == 'get_status':
                     profile = fetch_profile('valheim')
                     if profile:
                         for member in members:
                             for player in profile:
                                 if member.name == player:  
                                     current_members.add(member)
-                                    
-                        # for member in current_members:
-                        #     await member.send(f'valheim server stopped by {message.author.name}\n status: `{instance_message}`')
-
-                        channel = client.get_channel(1295284991064018945)
-                        if channel:
-                            await channel.send(f'{message.author.name} stopped the valheim server\n status: `{instance_message}`')
-
+                    await get_status(current_members)
+                
+                    # if channel:
+                    #         await channel.send(f'{message.author} stopped the valheim server\n status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`') 
+                
                 else:
                     await message.author.send(f"Profile {profile_name} does not exist.")
-            else:
-                await message.author.send("message not recognized. Please enter a valid command")
+                
+
             
         else:
             await client.process_commands(message)
+
 
     client.run(TOKEN)
