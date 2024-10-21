@@ -22,9 +22,9 @@ operation_results = {2104194: 'DONE', 35394935: 'PENDING', 121282975: 'RUNNING'}
 async def send_message(members, message):
         for member in members:
             await member.send(message)
-async def handle_instance_start(task, message, client, channel, operation_results, msg):
+async def handle_instance_start(operation, message, client, channel, operation_results, msg):
     # Wait for the task to complete and get the result
-    operation = await task
+    # operation = await task
 
     # Now that the task is done, send the message to the channel
     if channel:
@@ -355,17 +355,17 @@ def run_discord_bot():
                 elif user_message[0] == 'start_server':
                     # operation = await start_instance(members, message.author)
                     # instance_message = 'a'
-                    operation_task = asyncio.create_task(start_instance(members, message.author))
+                    operation_task = await start_instance(members, message.author)
 
                     channel = client.get_channel(1295284991064018945)
                     if channel:
-                        operation_task.add_done_callback( lambda task: asyncio.create_task(handle_instance_start(operation_task, message, client, channel, operation_results, 'started'))    )    
+                        await handle_instance_start(operation_task, message, client, channel, operation_results, 'started')
                 elif user_message[0] == 'stop_server':
-                    operation_task = asyncio.create_task(stop_instance(members, message.author))
+                    operation_task = await stop_instance(members, message.author)
                     channel = client.get_channel(1295284991064018945)
 
                     if channel:
-                        operation_task.add_done_callback( lambda task: asyncio.create_task(handle_instance_start(operation_task, message, client, channel, operation_results, 'started'))    )    
+                        await handle_instance_start(operation_task, message, client, channel, operation_results, 'stopped')  
                 
                 elif user_message[0] == 'get_status':
                     profile = fetch_profile('valheim')
