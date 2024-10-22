@@ -45,7 +45,7 @@ async def start_instance(members, author):
     # for member in current_members:
     #     await member.send(f'valheim server is starting')
     print(f"Starting instance: {INSTANCE_NAME}")
-    await get_status(current_members)
+    await get_status([author])
 
     client = compute_v1.InstancesClient(credentials=credentials)
     operation = client.start(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
@@ -67,13 +67,15 @@ async def stop_instance(members, author):
                     current_members.add(member)
 
     for member in current_members:
-        await member.send(f'valheim server is stopping')
+        if member == author:
+            await member.send(f'valheim server is stopping')
     print(f"Stopping instance: {INSTANCE_NAME}")
-    await get_status(current_members)
 
     client = compute_v1.InstancesClient(credentials=credentials)
     operation = client.stop(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
     operation.result()
+    await get_status(current_members)
+
     res = await get_status_channel()
     # operation.result()
     print(f"Stopped instance: {INSTANCE_NAME}")
