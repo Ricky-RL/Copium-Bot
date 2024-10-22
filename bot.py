@@ -22,13 +22,13 @@ operation_results = {2104194: 'DONE', 35394935: 'PENDING', 121282975: 'RUNNING'}
 async def send_message(members, message):
         for member in members:
             await member.send(message)
-async def handle_instance_start(operation, message, client, channel, operation_results, msg):
+async def handle_instance_start(operation, message, client, channel, operation_results, msg, res):
     # Wait for the task to complete and get the result
     # operation = await task
 
     # Now that the task is done, send the message to the channel
     if channel:
-        await channel.send(f'{message.author} {msg} the valheim server\n status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
+        await channel.send(f'{message.author} {msg} the valheim server\nserver status: `{res}`\noperation status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
 
 
 
@@ -49,10 +49,10 @@ async def start_instance(members, author):
 
     client = compute_v1.InstancesClient(credentials=credentials)
     operation = client.start(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
-
     operation.result()  # Wait for the operation to complete
+    res = await get_status_channel()
     for member in current_members:    
-        await member.send(f'valheim server started by {author}\n status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
+        await member.send(f'valheim server started by {author}\n server status: `{res}`')
 
     print('server started')
     return operation
@@ -74,11 +74,12 @@ async def stop_instance(members, author):
     client = compute_v1.InstancesClient(credentials=credentials)
     operation = client.stop(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
     operation.result()
+    res = await get_status_channel()
     # operation.result()
     print(f"Stopped instance: {INSTANCE_NAME}")
           
     for member in current_members:
-        await member.send(f'valheim server stopped by {author}\nstatus: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
+        await member.send(f'valheim server stopped by {author}\n server status: `{res}`')
 
 
     return operation
@@ -90,8 +91,19 @@ async def get_status(members):
     print(f"Got status of instance: {INSTANCE_NAME}")
     print(operation.status)
     for member in members:
-        await member.send(f'valheim server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
+        await member.send(f'current valheim server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
     return
+
+async def get_status_channel():
+    print(f"Getting status of instance: {INSTANCE_NAME}")
+    client = compute_v1.InstancesClient(credentials=credentials)
+    operation = client.get(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
+    return operation.status 
+    # print(f"Got status of instance: {INSTANCE_NAME}")
+    # print(operation.status)
+    # for member in members:
+    #     await member.send(f'valheim server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
+    # return
 
 def run_discord_bot():
     intents = discord.Intents.default()
@@ -356,16 +368,18 @@ def run_discord_bot():
                     # operation = await start_instance(members, message.author)
                     # instance_message = 'a'
                     operation_task = await start_instance(members, message.author)
-
+                    res = await get_status_channel()
                     channel = client.get_channel(1295284991064018945)
+
                     if channel:
-                        await handle_instance_start(operation_task, message, client, channel, operation_results, 'started')
+                        await handle_instance_start(operation_task, message, client, channel, operation_results, 'started', res)
                 elif user_message[0] == 'stop_server':
                     operation_task = await stop_instance(members, message.author)
                     channel = client.get_channel(1295284991064018945)
+                    res = await get_status_channel()
 
                     if channel:
-                        await handle_instance_start(operation_task, message, client, channel, operation_results, 'stopped')  
+                        await handle_instance_start(operation_task, message, client, channel, operation_results, 'stopped', res)  
                 
                 elif user_message[0] == 'get_status':
                     profile = fetch_profile('valheim')
