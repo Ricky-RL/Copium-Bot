@@ -390,7 +390,8 @@ def run_discord_bot():
                             for player in profile:
                                 if member.name == player:  
                                     current_members.add(member)
-                    await get_status(current_members)
+                    await get_status([message.author])
+                    # await get_status(current_members)
                 
                     # if channel:
                     #         await channel.send(f'{message.author} stopped the valheim server\n status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`') 
