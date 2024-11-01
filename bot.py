@@ -283,7 +283,7 @@ def run_discord_bot():
                     response_list = {}
                     current_members = set()
                     await message.author.send('cleared')
-#
+
                 elif(user_message.lower() == 'remind'):
                     temp_members = []
                     temp_people = people
@@ -308,7 +308,11 @@ def run_discord_bot():
             if(message.content.startswith('*')):
                 user_message = message.content[len(response_prefix):].strip()
                 message = f"{message.author}: {user_message}"
-                await send_message(members, message)
+
+                for member in members:
+                    if member.name in people:
+                        await member.send(message)
+                # await send_message(members, message)
                 return
             
             if message.content.startswith('!'):
