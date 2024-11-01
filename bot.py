@@ -4,8 +4,8 @@ import responses
 from discord.ext import commands
 from secrets import TOKEN, PROJECT, ZONE, INSTANCE_NAME
 from datetime import datetime, timedelta
-from data import allchamp, people, help_str
-import random
+from data import allchamp, people, help_str, people_test
+import random   
 from google.cloud import compute_v1
 from google.oauth2 import service_account
 from profiles.profiles_db import add_new_profile, fetch_profile, delete_profile
