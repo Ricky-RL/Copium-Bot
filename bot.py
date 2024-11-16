@@ -59,7 +59,7 @@ async def start_instance(members, author):
 
 async def stop_instance(members, author):
 
-    profile = fetch_profile('valheim')
+    profile = fetch_profile('valheim', None)
     if profile:
         for member in members:
             for player in profile:
