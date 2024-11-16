@@ -28,14 +28,14 @@ async def handle_instance_start(operation, message, client, channel, operation_r
 
     # Now that the task is done, send the message to the channel
     if channel:
-        await channel.send(f'{message.author} {msg} the valheim server\nserver status: `{res}`\noperation status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
+        await channel.send(f'{message.author} {msg} the necesse server\nserver status: `{res}`\noperation status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
 
 
 
 async def start_instance(members, author):
 
     profiles = fetch_profile()
-    profile = profiles.get('valheim', None)
+    profile = profiles.get('necesse', None)
     if profile:
         for member in members:
             for player in profile:
@@ -52,14 +52,14 @@ async def start_instance(members, author):
     operation.result()  # Wait for the operation to complete
     res = await get_status_channel()
     for member in current_members:    
-        await member.send(f'valheim server started by {author}\n server status: `{res}`')
+        await member.send(f'necesse server started by {author}\n server status: `{res}`')
 
     print('server started')
     return operation
 
 async def stop_instance(members, author):
 
-    profile = fetch_profile('valheim', None)
+    profile = fetch_profile('necesse', None)
     if profile:
         for member in members:
             for player in profile:
@@ -68,7 +68,7 @@ async def stop_instance(members, author):
 
     for member in current_members:
         if member == author:
-            await member.send(f'valheim server is stopping')
+            await member.send(f'necesse server is stopping')
     print(f"Stopping instance: {INSTANCE_NAME}")
 
     client = compute_v1.InstancesClient(credentials=credentials)
@@ -93,7 +93,7 @@ async def get_status(members):
     print(f"Got status of instance: {INSTANCE_NAME}")
     print(operation.status)
     for member in members:
-        await member.send(f'current valheim server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
+        await member.send(f'current necesse server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
     return
 
 async def get_status_channel():
@@ -388,7 +388,7 @@ def run_discord_bot():
                         await handle_instance_start(operation_task, message, client, channel, operation_results, 'stopped', res)  
                 
                 elif user_message[0] == 'get_status':
-                    profile = fetch_profile('valheim')
+                    profile = fetch_profile('necesse')
                     if profile:
                         for member in members:
                             for player in profile:
