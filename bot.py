@@ -81,7 +81,7 @@ async def stop_instance(members, author):
     print(f"Stopped instance: {INSTANCE_NAME}")
           
     for member in current_members:
-        await member.send(f'valheim server stopped by {author}\n server status: `{res}`')
+        await member.send(f'necesse server stopped by {author}\n server status: `{res}`')
 
 
     return operation
