@@ -59,7 +59,7 @@ async def start_instance(members, author):
 
 async def stop_instance(members, author):
 
-    profile = fetch_profile('necesse', None)
+    profile = fetch_profile('necesse')
     if profile:
         for member in members:
             for player in profile:
