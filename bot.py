@@ -172,7 +172,7 @@ def run_discord_bot():
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
         # await send_message(members, message)
     
-    @client.command(name='test3')
+    @client.command(name='test2')
     async def list_members(ctx):
         guild = ctx.guild
 
