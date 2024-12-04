@@ -79,7 +79,7 @@ async def stop_instance(members, author):
     res = await get_status_channel()
     # operation.result()
     print(f"Stopped instance: {INSTANCE_NAME}")
-          
+
     for member in current_members:
         await member.send(f'necesse server stopped by {author}\n server status: `{res}`')
 
@@ -106,6 +106,14 @@ async def get_status_channel():
     # for member in members:
     #     await member.send(f'valheim server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
     # return
+
+def get_temp_member_profile(members, people):
+    temp_members = []
+    for member in members:
+        if member.name in people:
+            temp_members.append(member)
+    
+    return temp_members
 
 def run_discord_bot():
     intents = discord.Intents.default()
@@ -164,7 +172,7 @@ def run_discord_bot():
         # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
         # await send_message(members, message)
     
-    @client.command(name='test2')
+    @client.command(name='test3')
     async def list_members(ctx):
         guild = ctx.guild
 
@@ -180,11 +188,15 @@ def run_discord_bot():
         for member in members:
             for player in people:
                 if member.name == 'iplaygam':   
-                    temp_members.append(member)
                     message = f'{member.mention} overwatch\n begin testing'
-                    await send_message(temp_members, message)
-                    temp_members = []
+                    await send_message([member], message)
                     break
+            
+            if member.name in people: # want to create a smaller list of members
+                temp_members.append(member)
+
+        members = temp_members
+
 
     @client.command(name='start')
     async def list_members(ctx):
@@ -232,6 +244,7 @@ def run_discord_bot():
 
             if(message.content.startswith(response_prefix)):
                 user_message = message.content[len(response_prefix):].strip()
+
                 unformatted_current_time = datetime.now()
                 current_time = unformatted_current_time.strftime("%I:%M %p")
 
@@ -301,23 +314,54 @@ def run_discord_bot():
                 elif(user_message.lower() == 'tags'):
                     await message.author.send(f"{people}")
 
-                else:
-                    await message.author.send(f"invalid input. Please enter a valid command")
+                # following fns require param so we must split input string
+                user_message = user_message.split(' ')
+                if user_message[0] == 'nudge':
+                    # no tags found in input
+                    if len(user_message) == 1:
+                        await message.author.send(f'Error: No tags found')
 
+                    persons = user_message[1:]
+                    # invalid tag
+                    for person in persons:
+                        if person not in people: 
+                            await message.author.send(f'{person} is an invalid tag. Valid tags can be found here: {people}')
+                            return
+                    
+                    # valid tag, now we send nudge request
+                    for member in members:
+                        if member.name in persons:
+                            # found person we are nudging
+                            await send_message([member], f'{member.mention} HURRYYYYYYY!!!!')
+                            await message.author.send(f'nudge successfully sent to {member.name}')
+                    
+
+                # await message.author.send(f"invalid input. Please enter a valid command")
 
             if(message.content.startswith('*')):
-                user_message = message.content[len(response_prefix):].strip()
-                message = f"{message.author}: {user_message}"
+                user_message = message.content[len(response_prefix):].strip().split(' ')
 
-                for member in members:
-                    if member.name in people:
-                        await member.send(message)
+                profiles_dict =  fetch_profile()
+                profile_names = profiles_dict.keys()
+                if user_message[0] in profile_names:
+                    temp_members = get_temp_member_profile(members,  profiles_dict[user_message[0]])
+                    await send_message(temp_members, f"({user_message[0]}) {message.author}: {' '.join(user_message[1:])}")
+                else:
+                    message = f"(global) {message.author}: {' '.join(user_message)}"
+                    for member in members:
+                        if member.name in people:
+                            await member.send(message)
                 # await send_message(members, message)
                 return
             
             if message.content.startswith('!'):
                 user_message = message.content[len(response_prefix):].strip().split(' ')
                 print(user_message)
+                # code for when I want to test stuff
+                if user_message[0] == 'test':
+                    print(fetch_profile())
+                    return
+                    
                 if user_message[0] == 'create_profile':
                     if len(user_message) < 3:
                         await message.author.send(f"invalid input. Please enter a valid command expecting 3 or more arguments. Received {len(user_message)}")
@@ -369,7 +413,8 @@ def run_discord_bot():
                                     
                         await message.author.send(f"asking {[n.name for n in current_members]} to play {profile_name}")
                         for member in current_members:
-                            await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
+                            if member.name != message.author.name:
+                                await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
                 elif user_message[0] == 'start_server':
                     # operation = await start_instance(members, message.author)
                     # instance_message = 'a'
@@ -395,6 +440,10 @@ def run_discord_bot():
                                 if member.name == player:  
                                     current_members.add(member)
                     await get_status([message.author])
+
+
+                
+
                     # await get_status(current_members)
                 
                     # if channel:

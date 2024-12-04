@@ -1,4 +1,34 @@
 allchamp = ["Aatrox","Ahri","Akali","Alistar","Amumu","Anivia","Annie","Aphelios","Ashe","Aurelion Sol","Azir","Bard","Blitzcrank","Brand","Braum","Caitlyn","Camille","Cassiopeia","ChoGath","Corki","Darius","Diana","Dr. Mundo","Draven","Ekko","Elise","Evelynn","Ezreal","Fiddlesticks","Fiora","Fizz","Galio","Gangplank","Garen","Gnar","Gragas","Graves","Hecarim","Heimerdinger","Illaoi","Irelia","Ivern","Janna","Jarvan IV","Jax","Jayce","Jhin","Jinx","KaiSa","Kalista","Karma","Karthus","Kassadin","Katarina","Kayle","Kayn","Kennen","KhaZix","Kindred","Kled","KogMaw","LeBlanc","Lee Sin","Leona","Lissandra","Lucian","Lulu","Lux","Malphite","Malzahar","Maokai","Master Yi","Miss Fortune","Mordekaiser","Morgana","Nami","Nasus","Nautilus","Neeko","Nidalee","Nocturne","Nunu and Willump","Olaf","Orianna","Ornn","Pantheon","Poppy","Pyke","Qiyana","Quinn","Rakan","Rammus","RekSai","Renekton","Rengar","Riven","Rumble","Ryze","Sejuani","Senna","Sett","Shaco","Shen","Shyvana","Singed","Sion","Sivir","Skarner","Sona","Soraka","Swain","Sylas","Syndra","Tahm Kench","Taliyah","Talon","Taric","Teemo","Thresh","Tristana","Trundle","Tryndamere","Twisted Fate","Twitch","Udyr","Urgot","Varus","Vayne","Veigar","VelKoz","Vi","Viktor","Vladimir","Volibear","Warwick","Wukong","Xayah","Xerath","Xin Zhao","Yasuo","Yorick","Yuumi","Zac","Zed","Ziggs","Zilean","Zoe","Zyra"]
 people = ["iplaygam", "epickc123", "masterfireking", "warscout101", "jaycsee", "iplaygamv2"]
 people_test = ['iplaygam', 'iplaygamv2']
-help_str = f"`!get_status`: returns the status of the server\n`!get_profiles`: prints out a list of all profiles`!play [profile_name]` : sends a request to play the profile specific game to its members\n`!create_profile [profile_name] [member_name1] [member_name2] ... ` : adds all members to the profile where member_name is a discord tag. Ex) `!create_profile hearts of iron iv iplaygam iplaygamv2`\n`!delete_profile [profile_name] `: deletes the profile with the given name \n`?tags`: see the list of all valid discord tags\n`?y`: confirm that you are playing tonight\n`?n`: confirm that you are not playing tonight\n`?{{time in minute(s)}}`: request a delay of the specified length. Ex `?10`\n`*{{any text}}`: send a message to all users\n`?list`: view the people that have already responsed\n`?recommend`: propreiteary trained via deep neural net model custom gpt ML algorithm that recommends champions based on projected player performance and meta shifts\n`?clear`: clears the list of players that are coming to play\n`?remind`: send a reminder to all players that have yet to respond\n`start_server`: start up the valheim server ```MAKE SURE TO SHUT DOWN THE SERVER AFTERWARDS```\n`stop_server`: stop the valheim server\n"
+help_str = """
+**Bot Commands**
+- `!get_status`: Returns the status of the server.
+- `!get_profiles`: Prints out a list of all profiles.
+- `!play [profile_name]`: Sends a request to play the profile-specific game to its members.
+- `!create_profile [profile_name] [member_name1] [member_name2] ...`: Adds all members to the profile. 
+   - Example: `!create_profile hearts of iron iv iplaygam iplaygamv2`
+- `!delete_profile [profile_name]`: Deletes the profile with the given name.
+
+**Player Interaction Commands**
+- `?nudge [discord_tag_1] [discord_tag_2] ...`: nudges the player(s) specified in the tag to hop on. Requires at least one tag in input. Run `?tags` to see valid player tags
+- `?tags`: See the list of all valid Discord tags.
+- `?y`: Confirm that you are playing tonight.
+- `?n`: Confirm that you are not playing tonight.
+- `?time in minute(s)`: Request a delay of the specified length.
+   - Example: `?10`
+- `?list`: View the people who have already responded.
+- `?recommend`: Proprietary trained deep neural net model custom GPT ML algorithm that recommends champions based on projected player performance and meta shifts.
+- `?clear`: Clears the list of players that are coming to play.
+- `?remind`: Send a reminder to all players that have yet to respond.
+
+** Communication Commands**
+- `*{OPTIONAL: profile_name} any text`: Send a message to all users.
+    - Example: `*overwatch test` sends the message `test` to all users in the overwatch profile
+    - Example: `*test` sends the message `test` to all users
+
+**Server Management Commands**
+- `start_server`: Start up the Valheim server.
+   - **Note:** *MAKE SURE TO SHUT DOWN THE SERVER AFTERWARDS.*
+- `stop_server`: Stop the Valheim server.
+"""
