@@ -450,7 +450,7 @@ def run_discord_bot():
                     #         await channel.send(f'{message.author} stopped the valheim server\n status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`') 
                 
                 else:
-                    await message.author.send(f"Profile {profile_name} does not exist.")
+                    await message.author.send(f"Invalid Command")
                 
 
             
