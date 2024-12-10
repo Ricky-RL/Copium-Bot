@@ -383,6 +383,10 @@ def run_discord_bot():
                     print(temp_profile)
 
                     result_message = add_new_profile(profile_name, temp_profile)
+                    for member in members:
+                        if member.name in temp_profile:
+                            await member.send(f"you have been added to {profile_name} by {message.author.name}" )
+                            
                     await message.author.send(result_message)
                 elif user_message[0] == 'delete_profile':
                     if len(user_message) < 2:
