@@ -329,12 +329,17 @@ def run_discord_bot():
                             return
                     
                     # valid tag, now we send nudge request
-                    for member in members:
-                        if member.name in persons:
-                            # found person we are nudging
-                            await send_message([member], f'{member.mention} HURRYYYYYYY!!!!')
-                            await message.author.send(f'nudge successfully sent to {member.name}')
+                    # for member in members:
+                    #     if member.name in persons:
+                    #         # found person we are nudging
+                    #         await send_message([member], f'{member.mention} HURRYYYYYYY!!!!')
+                    #         await message.author.send(f'nudge successfully sent to {member.name}')
                     
+                    for person in persons:
+                        for member in members:
+                            if person == member.name:
+                                await send_message([member], f'{member.mention} HURRYYYYYYY!!!!')
+                                await message.author.send(f'nudge successfully sent to {member.name}')                    
 
                 # await message.author.send(f"invalid input. Please enter a valid command")
 
@@ -372,7 +377,7 @@ def run_discord_bot():
 
                     temp_profile = {profile_name: []}
                     for member in members:
-                        for player in user_message_members:
+                        for player in user_message_members: 
                             if member.name == player:
                                 # print(f'player: {player} | member: {member.name}')
                                 temp_profile[profile_name].append(player)
