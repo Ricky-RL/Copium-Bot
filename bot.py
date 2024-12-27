@@ -305,7 +305,7 @@ def run_discord_bot():
                         await message.author.send(f"asking {[n.name for n in current_members]} to play {profile_name}")
                         for member in current_members:
                             if member.name != message.author.name:
-                                await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
+                                await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro. See `?help` for valid commands')
                 elif user_message[0] == 'start_server':
                     if len(user_message) != 2:
                         await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments `!start_server (profile_name)`. Run `!get_profiles` to see the list of valid profiles. Received {len(user_message)}")
