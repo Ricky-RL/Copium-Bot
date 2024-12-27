@@ -1,4 +1,7 @@
 
+import json 
+
+data_file = 'profiles/profiles.json'
 def fetch_profile(profile_name=None):
     try:
         with open('profiles/profiles.txt', 'r') as file:
@@ -34,6 +37,15 @@ def add_new_profile(profile_name, temp_profile):
         with open('profiles/profiles.txt', 'w') as file:
             file.write(str(profiles))
         return f"Created profile {profile_name} with members {temp_profile[profile_name]}"
+    
+async def add_new_profile_test(profile_name, profile_members):
+    profile_data = {profile_name: {member.name: member.id for member in profile_members}}
+    print(profile_data)
+    with open(data_file, 'w') as f:
+        json.dump(profile_data, f, indent=4)
+    return
+
+        
 
 def delete_profile(profile_name):
     try:
