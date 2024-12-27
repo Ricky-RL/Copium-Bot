@@ -20,6 +20,7 @@ response_list = {}
 current_members = set()
 global_ctx = None
 log_channel = None
+server_channel = None
 operation_results = {2104194: 'DONE', 35394935: 'PENDING', 121282975: 'RUNNING'}
 async def send_message(members, message):
         for member in members:
@@ -103,8 +104,13 @@ def run_discord_bot():
         members = temp_members
         global global_ctx
         global_ctx = ctx
+
         global log_channel
         log_channel = client.get_channel(1322339152632610876)
+
+        global server_channel
+        server_channel = channel = client.get_channel(1295284991064018945)
+
         # await add_new_profile_test('hi', members)      
 
     @client.event
@@ -128,7 +134,7 @@ def run_discord_bot():
             user_message = message.content.strip()
             print(f'{message.author}: {user_message}')
             await log_channel.send(f"{message.author}: {user_message}")
-            
+
             if(message.content.startswith(response_prefix)):
                 user_message = message.content[len(response_prefix):].strip()
 
@@ -315,11 +321,10 @@ def run_discord_bot():
                                 current_members.add(member)
 
                     resp = start_server(user_message[1])
+                                            
+                    await send_message(current_members, f"{message.author} is starting server {profile}. \n Connect to server at `play.jaysee.ca`")
+                    await server_channel.send(f"Server {profile} started by {message.author}. Server status: {resp}")
                     
-                    await message.author.send(f"{profile} Server started. Status {resp}.\n Connect to server at `play.jaysee.ca`")
-                        
-                    await send_message(current_members, f"Starting Server {profile}. Server status: {resp}")
-
                 elif user_message[0] == 'stop_server':
                     if len(user_message) != 2:
                         await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments `!stop_server (profile_name)`. Run `!get_profiles` to see the list of valid profiles. Received {len(user_message)}")
