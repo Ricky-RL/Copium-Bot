@@ -274,7 +274,7 @@ def run_discord_bot():
                         for member in current_members:
                             if member.name != message.author.name:
                                 await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
-                elif user_message[0] == 'start_server_test':
+                elif user_message[0] == 'start_server':
                     if len(user_message) != 2:
                         await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments `!start_server (profile_name)`. Run `!get_profiles` to see the list of valid profiles. Received {len(user_message)}")
                         return
@@ -289,7 +289,7 @@ def run_discord_bot():
                         
                     
 
-                elif user_message[0] == 'stop_server_test':
+                elif user_message[0] == 'stop_server':
                     if len(user_message) != 2:
                         await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments `!stop_server (profile_name)`. Run `!get_profiles` to see the list of valid profiles. Received {len(user_message)}")
                         return
