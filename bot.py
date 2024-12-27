@@ -1,14 +1,18 @@
 import asyncio
 import discord
 import responses
+import hmac
+import requests
+import hashlib
 from discord.ext import commands
-from secrets import TOKEN, PROJECT, ZONE, INSTANCE_NAME
+from secrets import TOKEN, PROJECT, ZONE, INSTANCE_NAME, TOKEN_LOCAL_SERVER
 from datetime import datetime, timedelta
 from data import allchamp, people, help_str, people_test
 import random   
 from google.cloud import compute_v1
 from google.oauth2 import service_account
 from profiles.profiles_db import add_new_profile, fetch_profile, delete_profile
+from game_server_commands.server_interactions import start_server, stop_server, get_status
 
 SERVICE_ACCOUNT_FILE = './secrets_gcp.json'
 credentials = service_account.Credentials.from_service_account_file(
@@ -22,79 +26,6 @@ operation_results = {2104194: 'DONE', 35394935: 'PENDING', 121282975: 'RUNNING'}
 async def send_message(members, message):
         for member in members:
             await member.send(message)
-async def handle_instance_start(operation, message, client, channel, operation_results, msg, res):
-    # Wait for the task to complete and get the result
-    # operation = await task
-
-    # Now that the task is done, send the message to the channel
-    if channel:
-        await channel.send(f'{message.author} {msg} the necesse server\nserver status: `{res}`\noperation status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`')
-
-
-
-async def start_instance(members, author):
-
-    profiles = fetch_profile()
-    profile = profiles.get('necesse', None)
-    if profile:
-        for member in members:
-            for player in profile:
-                if member.name == player:  
-                    current_members.add(member)
-
-    # for member in current_members:
-    #     await member.send(f'valheim server is starting')
-    print(f"Starting instance: {INSTANCE_NAME}")
-    await get_status([author])
-
-    client = compute_v1.InstancesClient(credentials=credentials)
-    operation = client.start(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
-    operation.result()  # Wait for the operation to complete
-    res = await get_status_channel()
-    for member in current_members:    
-        await member.send(f'necesse server started by {author}\n server status: `{res}`')
-
-    print('server started')
-    return operation
-
-async def stop_instance(members, author):
-
-    profile = fetch_profile('necesse')
-    if profile:
-        for member in members:
-            for player in profile:
-                if member.name == player:  
-                    current_members.add(member)
-
-    for member in current_members:
-        if member == author:
-            await member.send(f'necesse server is stopping')
-    print(f"Stopping instance: {INSTANCE_NAME}")
-
-    client = compute_v1.InstancesClient(credentials=credentials)
-    operation = client.stop(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
-    operation.result()
-    await get_status(current_members)
-
-    res = await get_status_channel()
-    # operation.result()
-    print(f"Stopped instance: {INSTANCE_NAME}")
-
-    for member in current_members:
-        await member.send(f'necesse server stopped by {author}\n server status: `{res}`')
-
-
-    return operation
-
-async def get_status(members):
-    print(f"Getting status of instance: {INSTANCE_NAME}")
-    client = compute_v1.InstancesClient(credentials=credentials)
-    operation = client.get(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
-    print(f"Got status of instance: {INSTANCE_NAME}")
-    print(operation.status)
-    for member in members:
-        await member.send(f'current necesse server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
-    return
 
 async def get_status_channel():
     print(f"Getting status of instance: {INSTANCE_NAME}")
@@ -127,50 +58,6 @@ def run_discord_bot():
     @client.event
     async def on_ready():
         print(f'{client.user} is running!')
-
-
-    @client.command(name='league')
-    async def list_members(ctx):
-        guild = ctx.guild
-
-        # Fetch all members in the guild
-        async for member in guild.fetch_members(limit=None):
-            pass  
-
-        members = guild.members
-        global members_global
-        members_global = members
-        temp_members = []
-        for member in members:
-            for player in people:
-                if member.name == player:   
-                    temp_members.append(member)
-                    message = f'{member.mention} leagueee\nto respond yes or no, please type y or n preceded by `?`. Example: `?y` `?n`\nif you need more time, please enter the amount of time you require in minutes with a number in minutes preceded by `?`. Example: `?10`\nUse `?help` to see a complete list of commands'
-                    await send_message(temp_members, message)
-                    temp_members = []
-
-    @client.command(name='overwatch')
-    async def list_members(ctx):
-        guild = ctx.guild
-
-        # Fetch all members in the guild
-        async for member in guild.fetch_members(limit=None):
-            pass  
-
-        members = guild.members
-        global members_global
-        members_global = members
-        temp_members = []
-        for member in members:
-            for player in people:
-                if member.name == player:   
-                    temp_members.append(member)
-                    message = f'{member.mention} overwatch\nto respond yes or no, please type y or n preceded by `?`. Example: `?y` `?n`\nif you need more time, please enter the amount of time you require in minutes with a number in minutes preceded by `?`. Example: `?10`\nUse `?help` to see a complete list of commands'
-                    await send_message(temp_members, message)
-                    temp_members = []
-
-        # message = 'also just dm me if you need more time cuz i havent tested this shit yet and idk if it works'
-        # await send_message(members, message)
     
     @client.command(name='test2')
     async def list_members(ctx):
@@ -196,30 +83,6 @@ def run_discord_bot():
                 temp_members.append(member)
 
         members = temp_members
-
-
-    @client.command(name='start')
-    async def list_members(ctx):
-        guild = ctx.guild
-
-        # Fetch all members in the guild
-        async for member in guild.fetch_members(limit=None):
-            pass  
-
-        members = [member for member in guild.members if member.name in people]
-        global members_global
-        members_global = members
-        temp_members = []
-
-        for member in members:
-            for player in people:
-                if member.name == ctx.author.name:   
-                    temp_members.append(member)
-                    message = f'Bot activated'
-                    await send_message(temp_members, message)
-                    temp_members = []
-                    break
-
                 
 
     @client.event
@@ -253,8 +116,6 @@ def run_discord_bot():
                     time = int(user_message)
                     if time == 69:
                         await message.author.send(f"nice")
-                    if time > 69:
-                        await message.author.send(f"we arent waiting that long dipshiit")
                         return
                     if time == 0:
                         await message.author.send(f"bruh just respond yes at this point")
@@ -313,6 +174,7 @@ def run_discord_bot():
                                 temp_members = []
                 elif(user_message.lower() == 'tags'):
                     await message.author.send(f"{people}")
+                
 
                 # following fns require param so we must split input string
                 user_message = user_message.split(' ')
@@ -327,19 +189,12 @@ def run_discord_bot():
                         if person not in people: 
                             await message.author.send(f'{person} is an invalid tag. Valid tags can be found here: {people}')
                             return
-                    
-                    # valid tag, now we send nudge request
-                    # for member in members:
-                    #     if member.name in persons:
-                    #         # found person we are nudging
-                    #         await send_message([member], f'{member.mention} HURRYYYYYYY!!!!')
-                    #         await message.author.send(f'nudge successfully sent to {member.name}')
-                    
+                
                     for person in persons:
                         for member in members:
                             if person == member.name:
                                 await send_message([member], f'{member.mention} HURRYYYYYYY!!!!')
-                                await message.author.send(f'nudge successfully sent to {member.name}')                    
+                                await message.author.send(f'nudge successfully sent to {member.name}')   
 
                 # await message.author.send(f"invalid input. Please enter a valid command")
 
@@ -379,13 +234,8 @@ def run_discord_bot():
                     for member in members:
                         for player in user_message_members: 
                             if member.name == player:
-                                # print(f'player: {player} | member: {member.name}')
                                 temp_profile[profile_name].append(player)
                                 await message.author.send(f"adding {player} to {profile_name}")
-                                # await message.author.send(f"asking {member} to play {user_message[0]}")
-                                # await send_message([member], f'{message.author.name} is asking you to play {user_message[0]} bro')     
-                    # Read existing profiles from file
-                    print(temp_profile)
 
                     result_message = add_new_profile(profile_name, temp_profile)
                     for member in members:
@@ -424,40 +274,49 @@ def run_discord_bot():
                         for member in current_members:
                             if member.name != message.author.name:
                                 await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro')
-                elif user_message[0] == 'start_server':
-                    # operation = await start_instance(members, message.author)
-                    # instance_message = 'a'
-                    operation_task = await start_instance(members, message.author)
-                    res = await get_status_channel()
-                    channel = client.get_channel(1295284991064018945)
+                elif user_message[0] == 'start_server_test':
+                    if len(user_message) != 2:
+                        await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments `!start_server (profile_name)`. Run `!get_profiles` to see the list of valid profiles. Received {len(user_message)}")
+                        return
+                    
+                    profile = fetch_profile(user_message[1])
+                    if not profile:
+                        await message.author.send(f"invalid profile. Profile {profile} was not found in the list of valid profiles `!get_profiles`.")
 
-                    if channel:
-                        await handle_instance_start(operation_task, message, client, channel, operation_results, 'started', res)
-                elif user_message[0] == 'stop_server':
-                    operation_task = await stop_instance(members, message.author)
-                    channel = client.get_channel(1295284991064018945)
-                    res = await get_status_channel()
+                    resp = start_server(user_message[1])
+                    
+                    await message.author.send(f"{profile} Server started. Status {resp}.\n Connect to server at `play.jaysee.ca`")
+                        
+                    
 
-                    if channel:
-                        await handle_instance_start(operation_task, message, client, channel, operation_results, 'stopped', res)  
-                
+                elif user_message[0] == 'stop_server_test':
+                    if len(user_message) != 2:
+                        await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments `!stop_server (profile_name)`. Run `!get_profiles` to see the list of valid profiles. Received {len(user_message)}")
+                        return
+                    
+                    profile = fetch_profile(user_message[1])
+                    if not profile:
+                        await message.author.send(f"invalid profile. Profile {profile} was not found in the list of valid profiles `!get_profiles`.")
+
+                    resp = stop_server(user_message[1])
+                    print(resp)
+                    
+                    await message.author.send(f"{profile} Server Stopped. Status {resp.text}")
+
                 elif user_message[0] == 'get_status':
-                    profile = fetch_profile('necesse')
-                    if profile:
-                        for member in members:
-                            for player in profile:
-                                if member.name == player:  
-                                    current_members.add(member)
-                    await get_status([message.author])
+                    if len(user_message) != 2:
+                        await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments `!get_status (profile_name)`. Run `!get_profiles` to see the list of valid profiles. Received {len(user_message)}")
+                        return
+                    
+                    profile = fetch_profile(user_message[1])
+                    if not profile:
+                        await message.author.send(f"invalid profile. Profile {profile} was not found in the list of valid profiles `!get_profiles`.")
 
-
-                
-
-                    # await get_status(current_members)
-                
-                    # if channel:
-                    #         await channel.send(f'{message.author} stopped the valheim server\n status: `{operation_results[operation.status] if operation_results[operation.status] else operation.status}`') 
-                
+                    resp = get_status(user_message[1])
+                    if resp.status_code == 200:
+                        await message.author.send(f"{profile} Server status: {resp.text}")
+                    else:
+                        await message.author.send(f"ERROR Response code: {resp.status_code}. Response body: {resp.text}")    
                 else:
                     await message.author.send(f"Invalid Command")
                 
