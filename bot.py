@@ -1,9 +1,5 @@
-import asyncio
 import discord
-import responses
-import hmac
-import requests
-import hashlib
+import json
 from discord.ext import commands
 from secrets import TOKEN, PROJECT, ZONE, INSTANCE_NAME, TOKEN_LOCAL_SERVER
 from datetime import datetime, timedelta
@@ -11,7 +7,7 @@ from data import allchamp, people, help_str, people_test
 import random   
 from google.cloud import compute_v1
 from google.oauth2 import service_account
-from profiles.profiles_db import add_new_profile, fetch_profile, delete_profile
+from profiles.profiles_db import add_new_profile, fetch_profile, delete_profile, add_new_profile_test
 from game_server_commands.server_interactions import start_server, stop_server, get_status
 
 SERVICE_ACCOUNT_FILE = './secrets_gcp.json'
@@ -22,21 +18,12 @@ credentials = service_account.Credentials.from_service_account_file(
 members_global= []
 response_list = {}
 current_members = set()
+global_ctx = None
+log_channel = None
 operation_results = {2104194: 'DONE', 35394935: 'PENDING', 121282975: 'RUNNING'}
 async def send_message(members, message):
         for member in members:
             await member.send(message)
-
-async def get_status_channel():
-    print(f"Getting status of instance: {INSTANCE_NAME}")
-    client = compute_v1.InstancesClient(credentials=credentials)
-    operation = client.get(project=PROJECT, zone=ZONE, instance=INSTANCE_NAME)
-    return operation.status 
-    # print(f"Got status of instance: {INSTANCE_NAME}")
-    # print(operation.status)
-    # for member in members:
-    #     await member.send(f'valheim server status: `{operation_results[operation.status] if operation.status in operation_results else operation.status}`')
-    # return
 
 def get_temp_member_profile(members, people):
     temp_members = []
@@ -45,6 +32,37 @@ def get_temp_member_profile(members, people):
             temp_members.append(member)
     
     return temp_members
+
+# data_file = 'profiles/profiles.json'
+
+# # Save member data to a file
+# async def save_member_data(members):
+#     members_data = {member.name: member.id for member in members if not member.bot}
+#     with open(data_file, 'w') as file:
+#         json.dump(members_data, file)
+
+
+# # Fetch member data and send a message
+# async def fetch_and_message_member(ctx, member_name):
+
+#     with open(data_file, 'r') as file:
+#         members_data = json.load(file)
+#         await ctx.send(f"member_data: {members_data}")
+
+#     member_id = members_data.get(member_name)
+#     if not member_id:
+#         await ctx.send(f"No member found with the name {member_name}.")
+#         return
+
+#     member = ctx.guild.get_member(member_id)
+#     if member:
+#         try:
+#             await member.send("Hello! This is a message sent via the bot.")
+#             await ctx.send(f"Message sent to {member_name}.")
+#         except discord.Forbidden:
+#             await ctx.send(f"Unable to send a message to {member_name}. They might have DMs disabled.")
+#     else:
+#         await ctx.send(f"Member {member_name} is not in this guild.")
 
 def run_discord_bot():
     intents = discord.Intents.default()
@@ -75,7 +93,7 @@ def run_discord_bot():
         for member in members:
             for player in people:
                 if member.name == 'iplaygam':   
-                    message = f'{member.mention} overwatch\n begin testing'
+                    message = f'{member.mention} begin testing'
                     await send_message([member], message)
                     break
             
@@ -83,11 +101,16 @@ def run_discord_bot():
                 temp_members.append(member)
 
         members = temp_members
-                
+        global global_ctx
+        global_ctx = ctx
+        global log_channel
+        log_channel = client.get_channel(1322339152632610876)
+        # await add_new_profile_test('hi', members)      
 
     @client.event
     async def on_message(message):
         global current_members
+        channel = client.get_channel(1322339152632610876)
 
         members = members_global
         # Ignore messages from the bot itself to avoid an infinite loop
@@ -104,13 +127,16 @@ def run_discord_bot():
             # Message sent in DM
             user_message = message.content.strip()
             print(f'{message.author}: {user_message}')
-
+            await log_channel.send(f"{message.author}: {user_message}")
+            
             if(message.content.startswith(response_prefix)):
                 user_message = message.content[len(response_prefix):].strip()
 
                 unformatted_current_time = datetime.now()
                 current_time = unformatted_current_time.strftime("%I:%M %p")
-
+                if (user_message == 'test'):
+                    print('test')
+                    await log_channel.send('test')
 
                 if(user_message.isdigit()):
                     time = int(user_message)
@@ -283,11 +309,16 @@ def run_discord_bot():
                     if not profile:
                         await message.author.send(f"invalid profile. Profile {profile} was not found in the list of valid profiles `!get_profiles`.")
 
+                    for member in members:
+                        for player in profile:
+                            if member.name == player:
+                                current_members.add(member)
+
                     resp = start_server(user_message[1])
                     
                     await message.author.send(f"{profile} Server started. Status {resp}.\n Connect to server at `play.jaysee.ca`")
                         
-                    
+                    await send_message(current_members, f"Starting Server {profile}. Server status: {resp}")
 
                 elif user_message[0] == 'stop_server':
                     if len(user_message) != 2:
