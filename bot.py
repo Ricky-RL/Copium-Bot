@@ -293,9 +293,11 @@ def run_discord_bot():
                     if len(user_message) < 2:
                         await message.author.send(f"invalid input. Please enter a valid command expecting 2 or more arguments. Received {len(user_message)}")
                         return
+                    
                     profile_name = user_message[1]
                     profiles = fetch_profile()
                     profile = profiles.get(profile_name, None)
+                    
                     if profile:
                         for member in members:
                             for player in profile:
@@ -315,13 +317,13 @@ def run_discord_bot():
                     if not profile:
                         await message.author.send(f"invalid profile. Profile {profile} was not found in the list of valid profiles `!get_profiles`.")
 
+                    current_members = set()
                     for member in members:
                         for player in profile:
                             if member.name == player:
                                 current_members.add(member)
 
                     resp = start_server(user_message[1])
-                                            
                     await send_message(current_members, f"{message.author} is starting server {profile}. \n Connect to server at `play.jaysee.ca`")
                     await server_channel.send(f"Server {profile} started by {message.author}. Server status: {resp}")
                     
@@ -338,6 +340,7 @@ def run_discord_bot():
                     print(resp)
                     
                     await message.author.send(f"{profile} Server Stopped. Status {resp.text}")
+
 
                 elif user_message[0] == 'get_status':
                     if len(user_message) != 2:
