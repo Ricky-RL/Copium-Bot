@@ -5,6 +5,8 @@ from secrets import TOKEN, PROJECT, ZONE, INSTANCE_NAME, TOKEN_LOCAL_SERVER
 from datetime import datetime, timedelta
 from data import allchamp, people, help_str, people_test
 import random   
+import asyncio
+import time
 from google.cloud import compute_v1
 from google.oauth2 import service_account
 from profiles.profiles_db import add_new_profile, fetch_profile, delete_profile, add_new_profile_test
@@ -21,10 +23,64 @@ current_members = set()
 global_ctx = None
 log_channel = None
 server_channel = None
+vote_profiles = []
+casted_votes = {}
 operation_results = {2104194: 'DONE', 35394935: 'PENDING', 121282975: 'RUNNING'}
 async def send_message(members, message):
         for member in members:
             await member.send(message)
+
+# async def handle_votes(current_members, vote_profiles, duration):
+#     time.sleep(duration) 
+    
+#     global casted_votes 
+#     print(casted_votes)
+
+#     if casted_votes['A'] == casted_votes['B']:
+#         random_value = random.randint(0, 1)
+#         if random_value == 0:
+#             await member.send(f'tiebreaker: Copium bot has randomly chosen {vote_profiles[0]}. Respond when you will be ready with `?y` `?n` `?5` ')           
+
+#         else:
+#             await member.send(f'tiebreaker: Copium bot has randomly chosen {vote_profiles[1]}. Respond when you will be ready with `?y` `?n` `?5` ')   
+#         return 1        
+
+                            
+#     if casted_votes['A'] > casted_votes['B']:                      
+#         for member in current_members:                        
+#             await member.send(f"{vote_profiles[0]} has won the vote!. Respond when you will be ready with `?y` `?n` `?5`")
+#     elif casted_votes['A'] < casted_votes['B']:
+#         for member in current_members:                        
+#             await member.send(f"{vote_profiles[1]} has won the vote!. Respond when you will be ready with `?y` `?n` `?5`")
+
+#     return 1
+
+
+async def handle_votes(current_members, vote_profiles, duration):
+    # Sleep asynchronously for the specified duration (non-blocking)
+    await asyncio.sleep(duration)  # Use asyncio.sleep to not block the event loop
+    
+    global casted_votes
+    print(casted_votes)
+
+    if casted_votes['A'] == casted_votes['B']:
+        random_value = random.randint(0, 1)
+        if random_value == 0:
+            for member in current_members:
+                await member.send(
+                    f"tiebreaker: Copium bot has randomly chosen {vote_profiles[0]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`\nRespond when you will be ready with `?y` `?n` `?5`"
+                )
+        else:
+            for member in current_members:
+                await member.send(
+                    f"tiebreaker: Copium bot has randomly chosen {vote_profiles[1]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`\nRespond when you will be ready with `?y` `?n` `?5`"
+                )
+    elif casted_votes['A'] > casted_votes['B']:                      
+        for member in current_members:                        
+            await member.send(f"{vote_profiles[0]} has won the vote!. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`\nRespond when you will be ready with `?y` `?n` `?5`")
+    elif casted_votes['A'] < casted_votes['B']:
+        for member in current_members:                        
+            await member.send(f"{vote_profiles[1]} has won the vote!. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`\nRespond when you will be ready with `?y` `?n` `?5`")
 
 def get_temp_member_profile(members, people):
     temp_members = []
@@ -116,6 +172,8 @@ def run_discord_bot():
     @client.event
     async def on_message(message):
         global current_members
+        global vote_profiles
+        global casted_votes
         channel = client.get_channel(1322339152632610876)
 
         members = members_global
@@ -206,7 +264,36 @@ def run_discord_bot():
                                 temp_members = []
                 elif(user_message.lower() == 'tags'):
                     await message.author.send(f"{people}")
-                
+                elif (user_message.lower() == 'a'):
+                    await message.author.send(f"Casting vote for `A: {vote_profiles[0]}`")
+                    casted_votes['A'] = casted_votes['A'] + 1
+                    if casted_votes['A'] > len(current_members) // 2:
+                        for member in current_members:
+                            await member.send(f"{vote_profiles[0]} has won the vote!. Respond when you will be ready with `?y` `?n` `?5`")            
+                    else:
+                        for member in current_members:
+                            await member.send(f"{message.author.name} has voted for {vote_profiles[0]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`")
+                elif (user_message.lower() == 'b'):
+                    await message.author.send(f"Casting vote for `B: {vote_profiles[1]}`")  
+                    casted_votes['B'] = casted_votes['B'] + 1
+ 
+                    for member in current_members:
+                        await member.send(f"{message.author.name} has voted for {vote_profiles[1]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`")
+                elif (user_message.lower() == 'random'):
+                    random_value = random.randint(0, 1)
+                    if random_value == 0:
+                        await message.author.send(f"Casting vote for `A: {vote_profiles[0]}`")
+                        casted_votes['A'] = casted_votes['A'] + 1
+                        for member in current_members:
+                            await member.send(f"{message.author.name} has voted for {vote_profiles[0]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}")
+                    else:
+                        await message.author.send(f"Casting vote for `B: {vote_profiles[1]}`")  
+                        casted_votes['B'] = casted_votes['B'] + 1
+                        for member in current_members:
+                            await member.send(f"{message.author.name} has voted for {vote_profiles[1]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`")    
+                elif (user_message.lower() == 'abstain'):
+                    for member in current_members:
+                        await member.send(f"{message.author.name} is abstaining to vote.")    
 
                 # following fns require param so we must split input string
                 user_message = user_message.split(' ')
@@ -308,6 +395,52 @@ def run_discord_bot():
                         for member in current_members:
                             if member.name != message.author.name:
                                 await member.send(f'{member.mention}\n{message.author.name} is asking you to play {user_message[1]} bro. See `?help` for valid commands')
+                elif user_message[0] == 'vote':
+                    current_members = set()
+                    vote_profiles = []
+                    casted_votes = {}
+                    casted_votes['A'] = 0
+                    casted_votes['B'] = 0
+                    if len(user_message) < 4:
+                        await message.author.send(f"invalid input. Please enter a valid command expecting 3 or more arguments in the format of `!vote [profile_1] [profile_2] [duration (seconds)]. Received {len(user_message)}")
+                        return
+                    # if not isinstance(user_message[3], int) or user_message[3] < 0:
+                    #     await message.author.send(f"invalid input. Fourth input must be positive intereger representing duration of the vote in seconds")
+                    #     return
+                    
+                    profile_1 = fetch_profile(user_message[1])
+                    profile_2 = fetch_profile(user_message[2])
+                    if not profile_1 or not profile_2:
+                        await message.author.send(f"invalid profile(s). Profiles A: {profile_1}, B: {profile_2} were not found in the list of valid profiles `!get_profiles`.")
+
+                    await message.author.send(f'Starting vote between {profile_1} and {profile_2}')
+
+                    for member in members:
+                        for player in profile_1:
+                            if member.name == player:
+                                current_members.add(member)
+                    for member in members:
+                        for player in profile_2:
+                            if member.name == player:
+                                current_members.add(member)
+
+                    vote_profiles.append(user_message[1])
+                    vote_profiles.append(user_message[2])
+                    for member in current_members:
+                        await member.send(f"PLease vote on which game to play: `A: {user_message[1]}`, `B: {user_message[2]}`.\n`?A` or `?B` to cast your vote. `?random` for random vote. `?abstain` to abstain")
+                    
+                    handle_votes_task = asyncio.create_task(handle_votes(current_members, vote_profiles, int(user_message[3])))
+                    if handle_votes_task == 1:
+                        print('test')
+                    else:
+                        print('nothing')
+                        return
+                    await log_channel.send('done')
+                    return
+                
+                elif user_message[0] == 'get_vote':
+                    await message.author.send(f"Current vote: {casted_votes}")
+                    return
                 elif user_message[0] == 'start_server':
                     if len(user_message) != 2:
                         await message.author.send(f"invalid input. Please enter a valid command expecting 2 arguments `!start_server (profile_name)`. Run `!get_profiles` to see the list of valid profiles. Received {len(user_message)}")
@@ -351,11 +484,14 @@ def run_discord_bot():
                     if not profile:
                         await message.author.send(f"invalid profile. Profile {profile} was not found in the list of valid profiles `!get_profiles`.")
 
+                    await log_channel.send('getting server status')
                     resp = get_status(user_message[1])
                     if resp.status_code == 200:
                         await message.author.send(f"{profile} Server status: {resp.text}")
                     else:
                         await message.author.send(f"ERROR Response code: {resp.status_code}. Response body: {resp.text}")    
+
+                    
                 else:
                     await message.author.send(f"Invalid Command")
                 
