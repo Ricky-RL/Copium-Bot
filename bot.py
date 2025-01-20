@@ -438,7 +438,11 @@ def run_discord_bot():
                     if not profile_1 or not profile_2:
                         await message.author.send(f"invalid profile(s). Profiles A: {profile_1}, B: {profile_2} were not found in the list of valid profiles `!get_profiles`.")
 
-                    await message.author.send(f'Starting vote between {profile_1} and {profile_2}')
+                    unformatted_current_time = datetime.now()
+                    current_time = unformatted_current_time.strftime("%I:%M %p")
+                    ready_time = (unformatted_current_time + timedelta(minutes=time)).strftime("%I:%M %p")
+
+                    await message.author.send(f'Starting vote between {profile_1} and {profile_2}. The vote will last for {int(user_message[3])} seconds and will close at {ready_time}')
 
                     for member in members:
                         for player in profile_1:
@@ -452,7 +456,7 @@ def run_discord_bot():
                     vote_profiles.append(user_message[1])
                     vote_profiles.append(user_message[2])
                     for member in current_members:
-                        await member.send(f"PLease vote on which game to play: `A: {user_message[1]}`, `B: {user_message[2]}`.\n`?A` or `?B` to cast your vote. `?random` for random vote. `?abstain` to abstain")
+                        await member.send(f"Please vote on which game to play: `A: {user_message[1]}`, `B: {user_message[2]}`.\n`?A` or `?B` to cast your vote. `?random` for random vote. `?abstain` to abstain")
                     
                     handle_votes_task = asyncio.create_task(handle_votes(current_members, vote_profiles, int(user_message[3])))
                     if handle_votes_task == 1:
