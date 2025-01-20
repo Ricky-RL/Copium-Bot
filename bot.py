@@ -3,7 +3,7 @@ import json
 from discord.ext import commands
 from secrets import TOKEN, PROJECT, ZONE, INSTANCE_NAME, TOKEN_LOCAL_SERVER
 from datetime import datetime, timedelta
-from data import allchamp, people, help_str, people_test
+from data import allchamp, people, help_str_1, help_str_2, people_test
 import random   
 import asyncio
 import time
@@ -235,7 +235,9 @@ def run_discord_bot():
                     await send_message(current_members, response_message)
                     return                
                 elif(user_message.lower() == 'help'):
-                    await message.author.send(help_str)
+                    await message.author.send(help_str_1)
+                    await message.author.send(help_str_2)
+
                 elif(user_message.lower() == 'recommend'):
                     await message.author.send(f"idk play {random.choice(allchamp)} or something")
                 elif(user_message.lower() == 'list'):
