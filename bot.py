@@ -25,6 +25,7 @@ log_channel = None
 server_channel = None
 vote_profiles = []
 casted_votes = {}
+voted_people = set()
 operation_results = {2104194: 'DONE', 35394935: 'PENDING', 121282975: 'RUNNING'}
 async def send_message(members, message):
         for member in members:
@@ -173,6 +174,7 @@ def run_discord_bot():
     async def on_message(message):
         global current_members
         global vote_profiles
+        global voted_people
         global casted_votes
         channel = client.get_channel(1322339152632610876)
 
@@ -265,8 +267,13 @@ def run_discord_bot():
                 elif(user_message.lower() == 'tags'):
                     await message.author.send(f"{people}")
                 elif (user_message.lower() == 'a'):
+                    if message.author.name in voted_people:
+                        await message.author.send(f"nice try buddy but you already voted")
+                        return
                     await message.author.send(f"Casting vote for `A: {vote_profiles[0]}`")
                     casted_votes['A'] = casted_votes['A'] + 1
+                    voted_people.add(message.author.name)
+
                     if casted_votes['A'] > len(current_members) // 2:
                         for member in current_members:
                             await member.send(f"{vote_profiles[0]} has won the vote!. Respond when you will be ready with `?y` `?n` `?5`")            
@@ -274,26 +281,41 @@ def run_discord_bot():
                         for member in current_members:
                             await member.send(f"{message.author.name} has voted for {vote_profiles[0]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`")
                 elif (user_message.lower() == 'b'):
+                    if message.author.name in voted_people:
+                        await message.author.send(f"nice try buddy but you already voted")
+                        return
                     await message.author.send(f"Casting vote for `B: {vote_profiles[1]}`")  
                     casted_votes['B'] = casted_votes['B'] + 1
- 
+
+                    voted_people.add(message.author.name)
+
                     for member in current_members:
                         await member.send(f"{message.author.name} has voted for {vote_profiles[1]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`")
                 elif (user_message.lower() == 'random'):
+                    if message.author.name in voted_people:
+                        await message.author.send(f"nice try buddy but you already voted")
+                        return
                     random_value = random.randint(0, 1)
                     if random_value == 0:
-                        await message.author.send(f"Casting vote for `A: {vote_profiles[0]}`")
+                        await message.author.send(f"Randomly casting vote for `A: {vote_profiles[0]}`")
                         casted_votes['A'] = casted_votes['A'] + 1
                         for member in current_members:
-                            await member.send(f"{message.author.name} has voted for {vote_profiles[0]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}")
+                            await member.send(f"{message.author.name} has randomly voted for {vote_profiles[0]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}")
                     else:
-                        await message.author.send(f"Casting vote for `B: {vote_profiles[1]}`")  
+                        await message.author.send(f"Randomly casting vote for `B: {vote_profiles[1]}`")  
                         casted_votes['B'] = casted_votes['B'] + 1
                         for member in current_members:
-                            await member.send(f"{message.author.name} has voted for {vote_profiles[1]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`")    
+                            await member.send(f"{message.author.name} has randomly voted for {vote_profiles[1]}. `A: {casted_votes['A']}`, `B: {casted_votes['B']}`")   
+                    voted_people.add(message.author.name)
+ 
                 elif (user_message.lower() == 'abstain'):
+                    if message.author.name in voted_people:
+                        await message.author.send(f"nice try buddy but you already voted")
+                        return
                     for member in current_members:
                         await member.send(f"{message.author.name} is abstaining to vote.")    
+                    
+                    voted_people.add(message.author.name)
 
                 # following fns require param so we must split input string
                 user_message = user_message.split(' ')
@@ -399,6 +421,7 @@ def run_discord_bot():
                     current_members = set()
                     vote_profiles = []
                     casted_votes = {}
+                    voted_people = set()
                     casted_votes['A'] = 0
                     casted_votes['B'] = 0
                     if len(user_message) < 4:
