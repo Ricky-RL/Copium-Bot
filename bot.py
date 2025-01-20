@@ -176,6 +176,7 @@ def run_discord_bot():
         global vote_profiles
         global voted_people
         global casted_votes
+        global log_channel
         channel = client.get_channel(1322339152632610876)
 
         members = members_global
@@ -427,7 +428,7 @@ def run_discord_bot():
                     casted_votes['A'] = 0
                     casted_votes['B'] = 0
                     if len(user_message) < 4:
-                        await message.author.send(f"invalid input. Please enter a valid command expecting 3 or more arguments in the format of `!vote [profile_1] [profile_2] [duration (seconds)]. Received {len(user_message)}")
+                        await message.author.send(f"invalid input. Please enter a valid command expecting 3 or more arguments in the format of `!vote [profile_1] [profile_2] [duration (minutes)]. Received {len(user_message)}")
                         return
                     # if not isinstance(user_message[3], int) or user_message[3] < 0:
                     #     await message.author.send(f"invalid input. Fourth input must be positive intereger representing duration of the vote in seconds")
@@ -440,9 +441,9 @@ def run_discord_bot():
 
                     unformatted_current_time = datetime.now()
                     current_time = unformatted_current_time.strftime("%I:%M %p")
-                    ready_time = (unformatted_current_time + timedelta(minutes=time)).strftime("%I:%M %p")
+                    ready_time = (unformatted_current_time + timedelta(minutes=int(user_message[3]))).strftime("%I:%M %p")
 
-                    await message.author.send(f'Starting vote between {profile_1} and {profile_2}. The vote will last for {int(user_message[3])} seconds and will close at {ready_time}')
+                    await message.author.send(f'Starting vote between {profile_1} and {profile_2}. The vote will last for {int(user_message[3])} minute(s) and will close at {ready_time}')
 
                     for member in members:
                         for player in profile_1:
@@ -458,7 +459,7 @@ def run_discord_bot():
                     for member in current_members:
                         await member.send(f"Please vote on which game to play: `A: {user_message[1]}`, `B: {user_message[2]}`.\n`?A` or `?B` to cast your vote. `?random` for random vote. `?abstain` to abstain")
                     
-                    handle_votes_task = asyncio.create_task(handle_votes(current_members, vote_profiles, int(user_message[3])))
+                    handle_votes_task = asyncio.create_task(handle_votes(current_members, vote_profiles, int(user_message[3]) * 60))
                     if handle_votes_task == 1:
                         print('test')
                     else:

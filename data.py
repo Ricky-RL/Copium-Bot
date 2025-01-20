@@ -4,7 +4,7 @@ people_test = ['iplaygam', 'iplaygamv2']
 help_str_1 = """
 **PLAY GAMES**
 - `!play [profile_name]`: Sends a request to play the profile-specific game to its members.
-- `!vote [profile_1] [profile_2] [duration (seconds)]`: Starts a vote between two profiles. Duration determines the length of the vote. Copium bot will automatically handle tiebreakers. Respond to vote with `?A` `?B` `?random` `?abstain`.
+- `!vote [profile_1] [profile_2] [duration (minutes)]`: Starts a vote between two profiles. Duration determines the length of the vote. Copium bot will automatically handle tiebreakers. Respond to vote with `?A` `?B` `?random` `?abstain`.
 
 **PROFILE MANAGEMENT COMMANDS**
 - `!get_status`: Returns the status of the server.
