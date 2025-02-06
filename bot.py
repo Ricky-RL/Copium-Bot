@@ -477,7 +477,7 @@ def run_discord_bot():
                     
                     profile = fetch_profile(user_message[1])
                     if not profile:
-                        await message.author.send(f"invalid profile. Profile {profile} was not found in the list of valid profiles `!get_profiles`.")
+                        await message.author.send(f"invalid profile. Profile {user_message[1]} was not found in the list of valid profiles `!get_profiles`.")
 
                     current_members = set()
                     for member in members:
@@ -486,8 +486,8 @@ def run_discord_bot():
                                 current_members.add(member)
 
                     resp = start_server(user_message[1])
-                    await send_message(current_members, f"{message.author} is starting server {profile}. \n Connect to server at `play.jaysee.ca`")
-                    await server_channel.send(f"Server {profile} started by {message.author}. Server status: {resp}")
+                    await send_message(current_members, f"{message.author} is starting server {user_message[1]}. \n Connect to server at `play.jaysee.ca`")
+                    await server_channel.send(f"Server {user_message[1]} started by {message.author}. Server status: {resp}")
                     
                 elif user_message[0] == 'stop_server':
                     if len(user_message) != 2:
@@ -496,12 +496,19 @@ def run_discord_bot():
                     
                     profile = fetch_profile(user_message[1])
                     if not profile:
-                        await message.author.send(f"invalid profile. Profile {profile} was not found in the list of valid profiles `!get_profiles`.")
+                        await message.author.send(f"invalid profile. Profile {user_message[1]} was not found in the list of valid profiles `!get_profiles`.")
+
+                    current_members = set()
+                    for member in members:
+                        for player in profile:
+                            if member.name == player:
+                                current_members.add(member)
 
                     resp = stop_server(user_message[1])
                     print(resp)
                     
-                    await message.author.send(f"{profile} Server Stopped. Status {resp.text}")
+                    await send_message(current_members, f"{message.author} has stopped server {user_message[1]}.")
+                    await server_channel.send(f"Server {user_message[1]} stopped by {message.author}. Server status: {resp}")
 
 
                 elif user_message[0] == 'get_status':
