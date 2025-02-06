@@ -3,4 +3,6 @@ secrets.py
 __pycache__/
 secrets_gcp.json
 pi.py
+profiles/profiles.txt
+gitignore
 
